@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <vector>
+#include <unordered_set>
+#include <limits>
 #include <boost/mpi.hpp>
 #include "repast_hpc/AgentId.h"
 #include "repast_hpc/RepastProcess.h"
@@ -762,4 +764,117 @@ bool AnasaziModel::relocateHousehold(Household* household)
 			householdSpace->moveTo(household->getId(),repast::Point<int>(loc2[0], loc2[1]));
 			return true;
 		}
+}
+
+bool AnasaziModel::testRelocateHousehold()
+{
+	std::vector<int> initial_location, excpected_new_location, actual_new_location, field_location;
+
+	std::vector<Location*> neighbouringLocations;
+	std::vector<Location*> suitableLocations;
+	std::vector<Location*> subOptimalLocations;
+	std::vector<Location*> waterSources;
+	std::unordered_set<Location*> checkedLocations;
+
+	// Get household agent
+	repast::SharedContext<Household>::const_iterator local_agents_iter = context.begin();
+	Household* household = (&**local_agents_iter);
+
+	// Moving household to (0, 0).
+	householdSpace->moveTo(household->getId(), repast::Point<int>(0, 0));
+
+	// Getting current household location on the grid
+	householdSpace->getLocation(household->getId(), initial_location);
+	std::cout << "Initial household location: (" << initial_location[0] << ", " << initial_location[1] << ").\n";
+
+	// Getting field location
+	locationSpace->getLocation(household->getAssignedField()->getId(), field_location);
+	std::cout << "Field location: (" << field_location[0] << ", " << field_location[1] << ").\n";
+
+	Location* householdLocation = locationSpace->getObjectAt(repast::Point<int>(initial_location[0], initial_location[1]));
+
+	bool new_location_found = false;
+	int range = floor(param.maxDistance/100);
+	repast::Moore2DGridQuery<Location> moore2DQuery(locationSpace);
+
+	for (int i=1; range*i < boardSizeY && !new_location_found; i++)
+	{
+		moore2DQuery.query(field_location, range*i, false, neighbouringLocations);
+
+		for (auto neighbouringLocation: neighbouringLocations)
+		{
+			if(checkedLocations.find(neighbouringLocation) == checkedLocations.end()) // checking if neighbour has been visited before
+			{
+				checkedLocations.insert(neighbouringLocation);
+				if(neighbouringLocation->getState() != 2)  // Skipping fields
+				{
+					if(householdLocation->getExpectedYield() < neighbouringLocation->getExpectedYield())
+						suitableLocations.push_back(neighbouringLocation);
+					else
+						subOptimalLocations.push_back(neighbouringLocation);
+					
+					if(neighbouringLocation->getWater())
+						waterSources.push_back(neighbouringLocation);
+				}
+			}
+		}
+
+		if(suitableLocations.size()) // If a location with less yield is found
+		{
+			new_location_found = true;
+
+			if(suitableLocations.size() > 1 && waterSources.size())
+				getClosestToWater(suitableLocations, waterSources, excpected_new_location);
+			else
+				locationSpace->getLocation(suitableLocations[0]->getId(), excpected_new_location);
+		}
+		else if(subOptimalLocations.size()) // If a location with more yield is found
+		{
+			new_location_found = true;
+
+			if(subOptimalLocations.size() > 1 && waterSources.size())
+				getClosestToWater(subOptimalLocations, waterSources, excpected_new_location);
+			else
+				locationSpace->getLocation(subOptimalLocations[0]->getId(), excpected_new_location);
+		}
+	}
+
+	std::cout << "Excpected new household location: (" << excpected_new_location[0] << ", " << excpected_new_location[1] << ").\n";
+
+	// triggerign household to move
+	relocateHousehold(household);
+
+	// Getting final agent location
+	householdSpace->getLocation(household->getId(), actual_new_location);
+	std::cout << "Calculated new household location: (" << actual_new_location[0] << ", " << actual_new_location[1] << ").\n";
+
+	if(actual_new_location[0] == excpected_new_location[0] && actual_new_location[1] == excpected_new_location[1])
+		std::cout << "Calculated location matches excpected location.\nTest passed.\n";
+	else
+		std::cout << "Calculated location does not match excpected location.\nTest failed.\n";
+}
+
+void AnasaziModel::getClosestToWater(std::vector<Location*> & locations, std::vector<Location*> & waterSources, std::vector<int> & closest_location_coordinates)
+{ 
+	std::vector<int> point1, point2;
+	Location* closest_location;
+	double shortest_dist=std::numeric_limits<double>::max();
+
+	for (auto location : locations)
+	{
+		locationSpace->getLocation(location->getId(),point1);
+		for (auto waterSource : waterSources)
+		{			
+			locationSpace->getLocation(waterSource->getId(), point2);
+			double distance = sqrt(pow((point1[0]-point2[0]),2) + pow((point1[1]-point2[1]),2));
+			
+			if(distance < shortest_dist)
+			{
+				shortest_dist = distance;
+				closest_location = location;
+			}
+		}
+	}
+
+	locationSpace->getLocation(closest_location->getId(), closest_location_coordinates);
 }
