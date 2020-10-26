@@ -964,6 +964,81 @@ void AnasaziModel::FieldTest(){
 }
 
 
+void AnasaziModel::testDeathAge(int deathAge){
+
+	// std::cout << "Running Test 3." << std::endl;
+
+	int mStorage = 1200;
+	int yearsFromDeath = 2;
+
+	int rank = repast::RepastProcess::instance()->rank();
+	repast::AgentId id1(1001, rank, 1);
+	repast::AgentId id2(1002, rank, 1);
+	repast::AgentId id3(1003, rank, 1);
+
+	Household* deadAgent = new Household(id1, deathAge+yearsFromDeath, deathAge, mStorage);
+	context.addAgent(deadAgent);
+	householdSpace->moveTo(id1, repast::Point<int>(0, 0));
+	fieldSearch(deadAgent);
+	std::cout << "\nCreated Agent 1 with age " << deathAge+yearsFromDeath << " and death age " << deathAge << "." << std::endl;
+
+	Household* oldAgent = new Household(id2, deathAge, deathAge, mStorage);
+	context.addAgent(oldAgent);
+	householdSpace->moveTo(id2, repast::Point<int>(0, 0));
+	fieldSearch(oldAgent);
+	std::cout << "Created Agent 3 with age " << deathAge << " and death age " << deathAge << "." << std::endl;
+
+	Household* youngAgent = new Household(id3, deathAge-yearsFromDeath, deathAge, mStorage);
+	context.addAgent(youngAgent);
+	householdSpace->moveTo(id3, repast::Point<int>(0, 0));
+	fieldSearch(youngAgent);
+	std::cout << "Created Agent 3 with age " << deathAge-yearsFromDeath << " and death age " << deathAge << "." << std::endl;
+
+	std::cout << "\nAgent 1 should be dead immediately." << std::endl;
+	std::cout << "Agent 2 should be dead immediately." << std::endl;
+	std::cout << "Agent 3 should die after " << yearsFromDeath << " years." << std::endl;
+
+	int year = 0;
+	std::cout << "\nYear: " << year << std::endl;
+
+	if(deadAgent->death()) {
+
+		std::cout << "Agent 1 is dead." << std::endl;
+		if(oldAgent->death()) {
+
+			std::cout << "Agent 2 is dead." << std::endl;
+			while( !(youngAgent->death()) ) { // while young agent is not dead
+
+				std::cout << "Agent 3 is not dead." << std::endl;
+				youngAgent->nextYear(1); // random number given as 'needs' parameter
+				year++;
+				yearsFromDeath--;
+				std::cout << "\nYear: " << year << std::endl;
+
+				if(yearsFromDeath < 0){ break; }
+			}
+			if(yearsFromDeath == 0) { // young agent died at reaching death age
+				std::cout << "Agent 3 is dead." << std::endl;
+				std::cout << "\nTest 3 successful." << std::endl;
+				// deleteTestModel(testModel);
+				// return true;
+			}
+			else { // young agent died before or after death age
+				std::cout << "Agent 3 did not die at the right time." << std::endl;
+				// return false;
+			}
+		}
+		else { // old agent didnt die
+			std::cout << "Agent 2 did not die." << std::endl;
+			// return false;
+		}
+	}
+	else { // dead agent didnt die
+		std::cout << "Agent 2 did not die." << std::endl;
+		// return false;
+	}
+}
+
 
 
 
