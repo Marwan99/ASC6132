@@ -8,7 +8,7 @@
 
 
 
-bool test2(int argc, char** argv){
+void test2(int argc, char** argv){
 
     /* Test setup ---------------------------------------------------*/
 
@@ -20,7 +20,7 @@ bool test2(int argc, char** argv){
     repast::RepastProcess::init(configFile);
     world = new boost::mpi::communicator; // confirm if this is needed
 
-    std::cout << "Running Test 2." << std::endl;
+    // std::cout << "Running Test 2." << std::endl;
 
     double expectedResult = 1.6;
     int zone = 2;
@@ -43,13 +43,35 @@ bool test2(int argc, char** argv){
     if (testResult == expectedResult){
         std::cout << "Test result matches expected result." << std::endl;
         std::cout << "Test 2 successful." << std::endl;
-        return true;
+        // return true;
     }
     else{
         std::cout << "Test result does not match expected result." << std::endl;
         std::cout << "Test 2 failed." << std::endl;
-        return false;
+        // return false;
     }
+}
+
+void test3(int argc, char** argv){
+
+    /* Test setup ---------------------------------------------------*/
+    std::string configFile = argv[1]; // The name of the configuration file
+    std::string propsFile  = argv[2]; // The name of the properties file
+    boost::mpi::communicator* world;
+
+    repast::RepastProcess::init(configFile);
+    world = new boost::mpi::communicator; // confirm if this is needed
+
+    int age = 30;
+
+    /* Test body ------------------------------------------------------*/
+    AnasaziModel* testModel = new AnasaziModel(propsFile, argc, argv, world);
+    testModel->initAgents();
+    testModel->testDeathAge(age);
+
+    /* Teardown-----------------------------------------------------*/
+    delete testModel;
+    repast::RepastProcess::instance()->done();
 }
 
 void test5(int argc, char** argv){
@@ -70,7 +92,6 @@ void test5(int argc, char** argv){
 
     delete model;
     repast::RepastProcess::instance()->done();
-
 }
 
 void test6(int argc, char** argv)
@@ -108,7 +129,7 @@ int main(int argc, char** argv){
     std::cout << "----------------------------------\n\n";
 
     std::cout << "Starting test 3...\n";
-    /*Insert test 3 function here*/
+    test3(argc, argv);
     std::cout << "----------------------------------\n\n";
 
     std::cout << "Starting test 4...\n";
