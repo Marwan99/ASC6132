@@ -23,7 +23,6 @@ private:
 	int houseID = 0;
 
 	std::ofstream out;
-	std::ofstream out2;
 	struct Parameters
 	{
 		int startYear;
@@ -109,17 +108,17 @@ public:
 	bool relocateHousehold(Household* household);
 
 	// Test 3 methods
-	void testDeathAge(int deathAge);
+	void testDeathAge(int deathAge, std::ofstream* log_file);
 
 	// Test 6 methods
-	bool testRelocateHousehold();
+	bool testRelocateHousehold(std::ofstream* log_file);
 	void getClosestToWater(std::vector<Location*> & locations, std::vector<Location*> & waterSources, std::vector<int> & closest_location_coordinates);
 
 	//Test 5 methods
-	void FieldTest();
+	void FieldTest(std::ofstream* log_file);
 
 	// Test 1 methods
-	void testInitAgent();
+	void testInitAgent(std::ofstream* log_file);
 };
 
 

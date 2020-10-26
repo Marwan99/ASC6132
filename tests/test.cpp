@@ -4,14 +4,16 @@
 #include "Model.h"
 #include "Location.h"
 #include "Household.h"
+#include "Logger.h"
 #include <iomanip>
 
-void test1(int argc, char** argv){
-
+void test1(int argc, char** argv, std::ofstream* output_file)
+{
     /* Test setup ---------------------------------------------------*/
     std::string configFile = argv[1]; // The name of the configuration file
     std::string propsFile  = argv[2]; // The name of the properties file
     boost::mpi::communicator* world;
+
 
     repast::RepastProcess::init(configFile);
     world = new boost::mpi::communicator; // confirm if this is needed
@@ -19,31 +21,32 @@ void test1(int argc, char** argv){
     /* Test body ------------------------------------------------------*/
     AnasaziModel* testModel = new AnasaziModel(propsFile, argc, argv, world);
     testModel->initAgents();
-    testModel->testInitAgent();
+    testModel->testInitAgent(output_file);
 
     /* Teardown-----------------------------------------------------*/
     delete testModel;
     repast::RepastProcess::instance()->done();
 }
 
-void test2(int argc, char** argv){
 
+void test2(int argc, char** argv, std::ofstream* output_file)
+{
     /* Test setup ---------------------------------------------------*/
-
+    customPrint logger(output_file);
     std::string configFile = argv[1]; // The name of the configuration file
     std::string propsFile  = argv[2]; // The name of the properties file
-    // boost::mpi::environment env(argc, argv);
+    // boost::mpi::environment env(argc, argv, file);
     boost::mpi::communicator* world;
 
     repast::RepastProcess::init(configFile);
     world = new boost::mpi::communicator; // confirm if this is needed
 
-    // std::cout << "Running Test 2." << std::endl;
+    // logger.print("Running Test 2.");
 
     double expectedResult = 1.6;
     int zone = 2;
-
-    std::cout << "Expected hydro level for zone " << zone << " in year 800 is: " << expectedResult << std::endl;
+    
+    logger.print("Expected hydro level for zone " + std::to_string(zone) + " in year 800 is: " + std::to_string(expectedResult));
 
     // AnasaziModel* testModel = createTestModel();
     AnasaziModel* testModel = new AnasaziModel(propsFile, argc, argv, world);
@@ -51,7 +54,7 @@ void test2(int argc, char** argv){
     testModel->readCsvHydro();
     double testResult = testModel->hydroLevel(zone);
 
-    std::cout << "Value in model environment is: " << testResult << std::endl;
+    logger.print("Value in model environment is: " + std::to_string(testResult));
 
     // deleteTestModel(testModel);
     delete testModel;
@@ -59,19 +62,19 @@ void test2(int argc, char** argv){
     repast::RepastProcess::instance()->done();
 
     if (testResult == expectedResult){
-        std::cout << "Test result matches expected result." << std::endl;
-        std::cout << "Test 2 successful." << std::endl;
+        logger.print("Test result matches expected result.");
+        logger.print("Test 2 successful.");
         // return true;
     }
     else{
-        std::cout << "Test result does not match expected result." << std::endl;
-        std::cout << "Test 2 failed." << std::endl;
+        logger.print("Test result does not match expected result.");
+        logger.print("Test 2 failed.");
         // return false;
     }
 }
 
-void test3(int argc, char** argv){
-
+void test3(int argc, char** argv, std::ofstream* output_file)
+{
     /* Test setup ---------------------------------------------------*/
     std::string configFile = argv[1]; // The name of the configuration file
     std::string propsFile  = argv[2]; // The name of the properties file
@@ -85,14 +88,15 @@ void test3(int argc, char** argv){
     /* Test body ------------------------------------------------------*/
     AnasaziModel* testModel = new AnasaziModel(propsFile, argc, argv, world);
     testModel->initAgents();
-    testModel->testDeathAge(age);
+    testModel->testDeathAge(age, output_file);
 
     /* Teardown-----------------------------------------------------*/
     delete testModel;
     repast::RepastProcess::instance()->done();
 }
 
-void test5(int argc, char** argv){
+void test5(int argc, char** argv, std::ofstream* output_file)
+{
     std::string configFile = argv[1]; // The name of the configuration file
     std::string propsFile  = argv[2]; // The name of the properties file
 
@@ -106,19 +110,19 @@ void test5(int argc, char** argv){
     repast::ScheduleRunner& runner = repast::RepastProcess::instance()->getScheduleRunner();
 
     model->initAgents();
-    model->FieldTest();
+    model->FieldTest(output_file);
 
     delete model;
     repast::RepastProcess::instance()->done();
 }
 
-void test6(int argc, char** argv)
+void test6(int argc, char** argv, std::ofstream* output_file)
 {
 	/* Test setup ---------------------------------------------------*/
 
 	std::string configFile = argv[1]; // The name of the configuration file
 	std::string propsFile  = argv[2]; // The name of the properties file
-	// boost::mpi::environment env(argc, argv);
+	// boost::mpi::environment env(argc, argv, file);
 	boost::mpi::communicator* world;
 
 	repast::RepastProcess::init(configFile);
@@ -127,7 +131,7 @@ void test6(int argc, char** argv)
 	/* Test body ------------------------------------------------------*/
 	AnasaziModel* model = new AnasaziModel(propsFile, argc, argv, world);
 	model->initAgents();
-	model->testRelocateHousehold();
+	model->testRelocateHousehold(output_file);
 
 	/* Teardown-----------------------------------------------------*/
 	delete model;
@@ -136,31 +140,38 @@ void test6(int argc, char** argv)
 
 int main(int argc, char** argv){
 
+    std::ofstream *file = (new std::ofstream);
+    file->open("test_log.txt");
+
+    customPrint logger(file);
+
     boost::mpi::environment env(argc, argv);
 	
-    std::cout << "\nStarting test 1...\n";
-    test1(argc, argv);
-    std::cout << "----------------------------------\n\n";
+    logger.print("\nAnasazi Model Testing - Group 2\n");
+    logger.print("\nStarting test 1...\n");
+    test1(argc, argv, file);
+    logger.print("----------------------------------\n");
 
-    std::cout << "Starting test 2...\n";
-    test2(argc, argv);
-    std::cout << "----------------------------------\n\n";
+    logger.print("Starting test 2...\n");
+    test2(argc, argv, file);
+    logger.print("----------------------------------\n");
 
-    std::cout << "Starting test 3...\n";
-    test3(argc, argv);
-    std::cout << "----------------------------------\n\n";
+    logger.print("Starting test 3...\n");
+    test3(argc, argv, file);
+    logger.print("----------------------------------\n");
 
-    std::cout << "Starting test 4...\n";
+    logger.print("Starting test 4...\n");
     /*Insert test 4 function here*/
-    std::cout << "----------------------------------\n\n";
+    logger.print("----------------------------------\n");
 
-    std::cout << "Starting test 5...\n";
-    test5(argc,argv);
-    std::cout << "----------------------------------\n\n";
+    logger.print("Starting test 5...\n");
+    test5(argc,argv, file);
+    logger.print("----------------------------------\n");
     
-    std::cout << "Starting test 6...\n";
-    test6(argc, argv);
-    std::cout << "----------------------------------\n\n";
+    logger.print("Starting test 6...\n");
+    test6(argc, argv, file);
+    logger.print("----------------------------------\n");
     
+    file->close();
     return 0;
 }

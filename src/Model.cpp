@@ -19,6 +19,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include "repast_hpc/Moore2DGridQuery.h"
+#include "Logger.h"
 
 #include "Model.h"
 
@@ -766,8 +767,10 @@ bool AnasaziModel::relocateHousehold(Household* household)
 		}
 }
 
-bool AnasaziModel::testRelocateHousehold()
+bool AnasaziModel::testRelocateHousehold(std::ofstream* log_file)
 {
+	customPrint logger(log_file);
+
 	std::vector<int> initial_location, excpected_new_location, actual_new_location, field_location;
 
 	std::vector<Location*> neighbouringLocations;
@@ -785,11 +788,14 @@ bool AnasaziModel::testRelocateHousehold()
 
 	// Getting current household location on the grid
 	householdSpace->getLocation(household->getId(), initial_location);
-	std::cout << "Initial household location: (" << initial_location[0] << ", " << initial_location[1] << ").\n";
+	logger.print("Initial household location: (" +
+		std::to_string(initial_location[0]) + ", " +
+		std::to_string(initial_location[1]) + ").");
 
 	// Getting field location
 	locationSpace->getLocation(household->getAssignedField()->getId(), field_location);
-	std::cout << "Field location: (" << field_location[0] << ", " << field_location[1] << ").\n";
+	logger.print("Field location: (" + std::to_string(field_location[0]) +
+		", " + std::to_string(field_location[1]) + ").");
 
 	Location* householdLocation = locationSpace->getObjectAt(repast::Point<int>(initial_location[0], initial_location[1]));
 
@@ -839,19 +845,22 @@ bool AnasaziModel::testRelocateHousehold()
 		}
 	}
 
-	std::cout << "Excpected new household location: (" << excpected_new_location[0] << ", " << excpected_new_location[1] << ").\n";
+	logger.print("Excpected new household location: (" +
+		std::to_string(excpected_new_location[0]) + ", " +
+		std::to_string(excpected_new_location[1]) + ").");
 
 	// triggerign household to move
 	relocateHousehold(household);
 
 	// Getting final agent location
 	householdSpace->getLocation(household->getId(), actual_new_location);
-	std::cout << "Calculated new household location: (" << actual_new_location[0] << ", " << actual_new_location[1] << ").\n";
+	logger.print("Calculated new household location: (" + std::to_string(actual_new_location[0])
+		+ ", " + std::to_string(actual_new_location[1]) + ").");
 
 	if(actual_new_location[0] == excpected_new_location[0] && actual_new_location[1] == excpected_new_location[1])
-		std::cout << "Calculated location matches excpected location.\nTest passed.\n";
+		logger.print("Calculated location matches excpected location.\nTest passed.");
 	else
-		std::cout << "Calculated location does not match excpected location.\nTest failed.\n";
+		logger.print("Calculated location does not match excpected location.\nTest failed.");
 }
 
 void AnasaziModel::getClosestToWater(std::vector<Location*> & locations, std::vector<Location*> & waterSources, std::vector<int> & closest_location_coordinates)
@@ -879,11 +888,11 @@ void AnasaziModel::getClosestToWater(std::vector<Location*> & locations, std::ve
 	locationSpace->getLocation(closest_location->getId(), closest_location_coordinates);
 }
 
-void AnasaziModel::FieldTest(){
+void AnasaziModel::FieldTest(std::ofstream* log_file)
+{
+	customPrint logger(log_file);
 
-	out2.open("Test5.csv");
-	out2<< "Starting Test 5..."<< endl;
-	doPerTick();
+	doPerTick(); // ????
 	int i;
 	std::vector<int> loc;
 	std::vector<int> loc2;
@@ -891,32 +900,19 @@ void AnasaziModel::FieldTest(){
 	std::vector<int> loc4;
 	repast::SharedContext<Household>::const_iterator local_agents_iter = context.begin();
 	
-
-
 	Household* household = (&**local_agents_iter);
 	repast::AgentId id = household->getId();
 	locationSpace->getLocation(household->getAssignedField()->getId(), loc);
 	householdSpace->getLocation(id,loc2);
 
-	std::cerr << "Retrieving AgentId... " << std::endl;
-	std::cerr << "AgentId: " <<id<< std::endl;
-	std::cerr << "Retrieving field Position of agent Before..."  << std::endl;
-	std::cerr << "Field Position(X,Y): " <<loc[0]<<","<<loc[1]<< std::endl;
-	std::cerr << "Retrieving House Position of agent Before..."  << std::endl;
-	std::cerr << "House Position(X,Y)" << loc2[0]<< ","<<loc2[1] << std::endl;
-	
-	out2 << "Retrieving AgentId... " << endl;
-	out2 << "AgentId: " <<id<< endl;
-	out2 << "Retrieving field Position of agent Before..."  << endl;
-	out2 << "Field Position(X,Y): " <<loc[0]<<","<<loc[1]<< endl;
-	out2 << "Retrieving House Position of agent Before..."  << endl;
-	out2 << "House Position(X,Y)" << loc2[0]<< ","<<loc2[1] << endl;
-
-
+	logger.print("Retrieving AgentId... ");
+	logger.print("AgentId: " + std::to_string(id.id()));
+	logger.print("Retrieving field Position of agent Before..." );
+	logger.print("Field Position(X,Y): " + std::to_string(loc[0]) + "," + std::to_string(loc[1]));
+	logger.print("Retrieving House Position of agent Before..." );
+	logger.print("House Position(X,Y)" + std::to_string(loc2[0])+ ","+std::to_string(loc2[1]));
 
 	updateLocationProperties(); 
-
-	
 
 	std::vector<Location*> locationList;
 	locationSpace->getObjectsAt(repast::Point<int>(loc[0], loc[1]), locationList);
@@ -925,48 +921,35 @@ void AnasaziModel::FieldTest(){
 	int y = yieldFromPdsi(z,mz);
 	locationList[0]->calculateYield(y, 0, yieldGen->next());// change yield to 0 for assigned field
  	
- 	std::cerr << "Changing expected yield of field (X,Y)"<<loc[0] <<","<< loc[1]<<" to zero" << std::endl;
-	out2 << "Changing expected yield of field (X,Y)"<<loc[0] <<","<< loc[1]<<" to zero" << endl;
+ 	logger.print("Changing expected yield of field (X,Y)"+std::to_string(loc[0]) +","+ std::to_string(loc[1])+" to zero");
 
 	writeOutputToFile();
 	year++;
 	updateHouseholdProperties();
 
-	
-
 	id = household->getId();
 	locationSpace->getLocation(household->getAssignedField()->getId(), loc3);
 	householdSpace->getLocation(id,loc4);
 
-
-	std::cerr << "Retrieving AgentId... " << std::endl;
-	std::cerr << "AgentId: " <<id<< std::endl;
-	std::cerr << "Retrieving field Position of agent after making decision..."  << std::endl;
-	std::cerr << "Field Position(X,Y): " <<loc3[0]<<","<<loc3[1]<< std::endl;
-	std::cerr << "Retrieving House Position of agent after making decision..."  << std::endl;
-	std::cerr << "House Position(X,Y)" << loc4[0]<< ","<<loc4[1] << std::endl;
-	
-	out2 << "Retrieving AgentId... " << endl;
-	out2 << "AgentId: " <<id<< endl;
-	out2 << "Retrieving field Position of agent After Making Decision..."  << endl;
-	out2 << "Field Position(X,Y): " <<loc3[0]<<","<<loc3[1]<< endl;
-	out2 << "Retrieving House Position of agent After Making Decision..."  << endl;
-	out2 << "House Position(X,Y)" << loc4[0]<< ","<<loc4[1] << endl;
+	logger.print("Retrieving AgentId... ");
+	logger.print("AgentId: " +std::to_string(id.id()));
+	logger.print("Retrieving field Position of agent after making decision...");
+	logger.print("Field Position(X,Y): " + std::to_string(loc3[0]) + "," + std::to_string(loc3[1]));
+	logger.print("Retrieving House Position of agent after making decision...");
+	logger.print("House Position(X,Y)" + std::to_string(loc4[0])+ ","+std::to_string(loc4[1]));
 
 	if ((loc[0] != loc3[0]) || (loc[1] != loc3[1])){
 		if ((loc2[0]==loc4[0])&&(loc2[1]==loc4[1])){
-			std::cerr << "Agent"<<id<<" has correctly moved their field due to providing insufficient maize and remained at the same household" << std::endl;
-			out2 << "Agent"<<id<<" has correctly moved their field due to providing insufficient maize and remained at the same household" << endl;
+			logger.print("Agent"+std::to_string(id.id())+
+				" has correctly moved their field due to providing insufficient maize and remained at the same household");
 		}
-		
 	}
-
 }
 
 
-void AnasaziModel::testDeathAge(int deathAge){
-
-	// std::cout << "Running Test 3." << std::endl;
+void AnasaziModel::testDeathAge(int deathAge, std::ofstream* log_file)
+{
+	customPrint logger(log_file);
 
 	int mStorage = 1200;
 	int yearsFromDeath = 2;
@@ -980,67 +963,72 @@ void AnasaziModel::testDeathAge(int deathAge){
 	context.addAgent(deadAgent);
 	householdSpace->moveTo(id1, repast::Point<int>(0, 0));
 	fieldSearch(deadAgent);
-	std::cout << "\nCreated Agent 1 with age " << deathAge+yearsFromDeath << " and death age " << deathAge << "." << std::endl;
+	logger.print("Created Agent 1 with age " + std::to_string(deathAge+yearsFromDeath)
+		+ " and death age " + std::to_string(deathAge) + ".");;
 
 	Household* oldAgent = new Household(id2, deathAge, deathAge, mStorage);
 	context.addAgent(oldAgent);
 	householdSpace->moveTo(id2, repast::Point<int>(0, 0));
 	fieldSearch(oldAgent);
-	std::cout << "Created Agent 3 with age " << deathAge << " and death age " << deathAge << "." << std::endl;
+	logger.print("Created Agent 3 with age " + std::to_string(deathAge)
+		+ " and death age " + std::to_string(deathAge) + ".");
 
 	Household* youngAgent = new Household(id3, deathAge-yearsFromDeath, deathAge, mStorage);
 	context.addAgent(youngAgent);
 	householdSpace->moveTo(id3, repast::Point<int>(0, 0));
 	fieldSearch(youngAgent);
-	std::cout << "Created Agent 3 with age " << deathAge-yearsFromDeath << " and death age " << deathAge << "." << std::endl;
+	logger.print("Created Agent 3 with age " + std::to_string(deathAge-yearsFromDeath) +
+		" and death age " + std::to_string(deathAge) + ".");
 
-	std::cout << "\nAgent 1 should be dead immediately." << std::endl;
-	std::cout << "Agent 2 should be dead immediately." << std::endl;
-	std::cout << "Agent 3 should die after " << yearsFromDeath << " years." << std::endl;
+	logger.print("\nAgent 1 should be dead immediately.");
+	logger.print("Agent 2 should be dead immediately.");
+	logger.print("Agent 3 should die after " + std::to_string(yearsFromDeath) + " years.");
 
 	int year = 0;
-	std::cout << "\nYear: " << year << std::endl;
+	logger.print("\nYear: " + std::to_string(year));
 
 	if(deadAgent->death()) {
 
-		std::cout << "Agent 1 is dead." << std::endl;
+		logger.print("Agent 1 is dead.");
 		if(oldAgent->death()) {
 
-			std::cout << "Agent 2 is dead." << std::endl;
+			logger.print("Agent 2 is dead.");
 			while( !(youngAgent->death()) ) { // while young agent is not dead
 
-				std::cout << "Agent 3 is not dead." << std::endl;
+				logger.print("Agent 3 is not dead.");
 				youngAgent->nextYear(1); // random number given as 'needs' parameter
 				year++;
 				yearsFromDeath--;
-				std::cout << "\nYear: " << year << std::endl;
+				logger.print("\nYear: " + std::to_string(year));
 
 				if(yearsFromDeath < 0){ break; }
 			}
 			if(yearsFromDeath == 0) { // young agent died at reaching death age
-				std::cout << "Agent 3 is dead." << std::endl;
-				std::cout << "\nTest 3 successful." << std::endl;
+				logger.print("Agent 3 is dead.");
+				logger.print("\nTest 3 successful.");
 				// deleteTestModel(testModel);
 				// return true;
 			}
 			else { // young agent died before or after death age
-				std::cout << "Agent 3 did not die at the right time." << std::endl;
+				logger.print("Agent 3 did not die at the right time.");
 				// return false;
 			}
 		}
 		else { // old agent didnt die
-			std::cout << "Agent 2 did not die." << std::endl;
+			logger.print("Agent 2 did not die.");
 			// return false;
 		}
 	}
 	else { // dead agent didnt die
-		std::cout << "Agent 2 did not die." << std::endl;
+		logger.print("Agent 2 did not die.");
 		// return false;
 	}
 }
 
-void AnasaziModel::testInitAgent()
+void AnasaziModel::testInitAgent(std::ofstream* log_file)
 {
+	customPrint logger(log_file);
+
 	int mStorage = 1200;
 	int bornAge = 0;
 	int deathAge = 30;
@@ -1057,19 +1045,19 @@ void AnasaziModel::testInitAgent()
 	locationSpace->getLocation(newAgent->getAssignedField()->getId(), field_location);
 	int checkId = newAgent->getId().id();
 
-	std::cout << "Field location: (" << field_location[0] << ", " << field_location[1] << ").\n";
+	logger.print("Field location: (" + std::to_string(field_location[0]) + ", " + std::to_string(field_location[1]) + ").");
 
-	std::cout << "Created an agent with the Id: \n" << agentNumber << std::endl;
+	logger.print("Created an agent with the Id: \n" + std::to_string(agentNumber));
 
-	std::cout << "Checking the agent Id: \n" << checkId << std::endl;
+	logger.print("Checking the agent Id: \n" + std::to_string(checkId));
 
 	if (agentNumber == checkId)
 	{
-		std:cout << "Checked Id matched the actual Id. Test passed." << std::endl;
+		logger.print("Checked Id matched the actual Id. Test passed.");
 	}
 	else
 	{
-		std::cout << "Checked Id didn't match the actual Id. Test failed." << std::endl;
+		logger.print("Checked Id didn't match the actual Id. Test failed.");
 	}
 }
 
