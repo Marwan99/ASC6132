@@ -23,6 +23,7 @@ private:
 	int houseID = 0;
 
 	std::ofstream out;
+
 	struct Parameters
 	{
 		int startYear;
@@ -119,9 +120,9 @@ public:
 
 	// Test 1 methods
 	void testInitAgent(std::ofstream* log_file);
+
+	// Test 4 method
+	void testOutputFile(std::ofstream* log_file);
 };
-
-
-
 
 #endif

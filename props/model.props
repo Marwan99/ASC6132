@@ -7,7 +7,7 @@ proc.per.y = 1
 grid.buffer = 0
 
 start.year = 800
-end.year = 1350
+end.year = 1000
 max.store.year = 2
 max.storage = 1600
 household.need = 800

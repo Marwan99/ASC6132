@@ -1061,6 +1061,80 @@ void AnasaziModel::testInitAgent(std::ofstream* log_file)
 	}
 }
 
+void AnasaziModel::testOutputFile(std::ofstream* log_file)
+{
+	customPrint logger(log_file);
+	std::ifstream in;
+	int i;
+	int householdNumbers[param.endYear-param.startYear];
+	int time[param.endYear-param.startYear];
+	string temp;
+	int flag = 0;
+
+	string resultFile = props->getProperty("result.file");
+
+	
+
+	for(i=0;i<stopAt;i++)
+	{
+		
+		householdNumbers[i] = context.size();
+		time[i] = year;
+
+		doPerTick();
+	}
+
+	in.open(resultFile);
+
+	in.ignore(500,'\n');
+
+	for(i=0;i<stopAt;i++)
+	{
+		getline(in,temp,',');
+
+		if(repast::strToInt(temp)==time[i])
+		{
+
+			getline(in,temp);
+
+			if(repast::strToInt(temp)==householdNumbers[i])
+			{
+				flag++;
+			}
+			else
+			{
+				logger.print("Mismatch found at year: "+std::to_string(time[i]));
+				break;
+			}
+		}
+		else
+		{
+			logger.print("Mismatch found at year: "+std::to_string(time[i]));
+			break;
+		}
+	}
+
+	endloop: ;
+
+	if(flag==(stopAt))
+	{
+		logger.print("Output file matches the simulation values. Test passed");
+		std::ofstream Test4Outputfile;
+		Test4Outputfile.open("Test4Outputfile.csv");
+		Test4Outputfile << "Year,Number-of-Households" << std::endl;
+
+		for(i=0;i<stopAt;i++)
+		{
+			Test4Outputfile << time[i] << "," << householdNumbers[i] << std::endl;
+		}
+
+		Test4Outputfile.close();
+	}
+	else
+	{
+		logger.print("Output file didn't match the simulation values. Test failed");
+	}
+}
 
 
 

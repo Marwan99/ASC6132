@@ -95,6 +95,26 @@ void test3(int argc, char** argv, std::ofstream* output_file)
     repast::RepastProcess::instance()->done();
 }
 
+void test4(int argc, char** argv, std::ofstream* output_file){
+    std::string configFile = argv[1]; // The name of the configuration file
+    std::string propsFile  = argv[2]; // The name of the properties file
+
+    boost::mpi::environment env(argc, argv);
+    boost::mpi::communicator* world;
+
+    repast::RepastProcess::init(configFile);
+    world = new boost::mpi::communicator;
+
+    AnasaziModel* model = new AnasaziModel(propsFile, argc, argv, world);
+    repast::ScheduleRunner& runner = repast::RepastProcess::instance()->getScheduleRunner();
+
+    model->initAgents();
+    model->testOutputFile(output_file);
+
+    delete model;
+    repast::RepastProcess::instance()->done();
+}
+
 void test5(int argc, char** argv, std::ofstream* output_file)
 {
     std::string configFile = argv[1]; // The name of the configuration file
@@ -161,7 +181,7 @@ int main(int argc, char** argv){
     logger.print("----------------------------------\n");
 
     logger.print("Starting test 4...\n");
-    /*Insert test 4 function here*/
+    test4(argc, argv, file);
     logger.print("----------------------------------\n");
 
     logger.print("Starting test 5...\n");
