@@ -106,6 +106,10 @@ public:
 	bool fieldSearch(Household* household);
 	void removeHousehold(Household* household);
 	bool relocateHousehold(Household* household);
+
+	// Test 6 methods
+	bool testRelocateHousehold();
+	void getClosestToWater(std::vector<Location*> & locations, std::vector<Location*> & waterSources, std::vector<int> & closest_location_coordinates);
 };
 
 #endif
