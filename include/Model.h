@@ -23,6 +23,7 @@ private:
 	int houseID = 0;
 
 	std::ofstream out;
+	std::ofstream out2;
 	struct Parameters
 	{
 		int startYear;
@@ -110,6 +111,9 @@ public:
 	// Test 6 methods
 	bool testRelocateHousehold();
 	void getClosestToWater(std::vector<Location*> & locations, std::vector<Location*> & waterSources, std::vector<int> & closest_location_coordinates);
+
+	//Test 5 methods
+	void FieldTest();
 };
 
 #endif

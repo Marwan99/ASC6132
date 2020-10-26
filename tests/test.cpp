@@ -7,6 +7,7 @@
 #include <iomanip>
 
 
+
 bool test2(int argc, char** argv){
 
     /* Test setup ---------------------------------------------------*/
@@ -49,6 +50,27 @@ bool test2(int argc, char** argv){
         std::cout << "Test 2 failed." << std::endl;
         return false;
     }
+}
+
+void test5(int argc, char** argv){
+    std::string configFile = argv[1]; // The name of the configuration file
+    std::string propsFile  = argv[2]; // The name of the properties file
+
+    boost::mpi::environment env(argc, argv);
+    boost::mpi::communicator* world;
+
+    repast::RepastProcess::init(configFile);
+    world = new boost::mpi::communicator;
+
+    AnasaziModel* model = new AnasaziModel(propsFile, argc, argv, world);
+    repast::ScheduleRunner& runner = repast::RepastProcess::instance()->getScheduleRunner();
+
+    model->initAgents();
+    model->FieldTest();
+
+    delete model;
+    repast::RepastProcess::instance()->done();
+
 }
 
 void test6(int argc, char** argv)
@@ -94,7 +116,7 @@ int main(int argc, char** argv){
     std::cout << "----------------------------------\n\n";
 
     std::cout << "Starting test 5...\n";
-    /*Insert test 5 function here*/
+    test5(argc,argv);
     std::cout << "----------------------------------\n\n";
     
     std::cout << "Starting test 6...\n";

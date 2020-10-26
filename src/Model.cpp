@@ -878,3 +878,93 @@ void AnasaziModel::getClosestToWater(std::vector<Location*> & locations, std::ve
 
 	locationSpace->getLocation(closest_location->getId(), closest_location_coordinates);
 }
+
+void AnasaziModel::FieldTest(){
+
+	out2.open("Test5.csv");
+	out2<< "Starting Test 5..."<< endl;
+	doPerTick();
+	int i;
+	std::vector<int> loc;
+	std::vector<int> loc2;
+	std::vector<int> loc3;
+	std::vector<int> loc4;
+	repast::SharedContext<Household>::const_iterator local_agents_iter = context.begin();
+	
+
+
+	Household* household = (&**local_agents_iter);
+	repast::AgentId id = household->getId();
+	locationSpace->getLocation(household->getAssignedField()->getId(), loc);
+	householdSpace->getLocation(id,loc2);
+
+	std::cerr << "Retrieving AgentId... " << std::endl;
+	std::cerr << "AgentId: " <<id<< std::endl;
+	std::cerr << "Retrieving field Position of agent Before..."  << std::endl;
+	std::cerr << "Field Position(X,Y): " <<loc[0]<<","<<loc[1]<< std::endl;
+	std::cerr << "Retrieving House Position of agent Before..."  << std::endl;
+	std::cerr << "House Position(X,Y)" << loc2[0]<< ","<<loc2[1] << std::endl;
+	
+	out2 << "Retrieving AgentId... " << endl;
+	out2 << "AgentId: " <<id<< endl;
+	out2 << "Retrieving field Position of agent Before..."  << endl;
+	out2 << "Field Position(X,Y): " <<loc[0]<<","<<loc[1]<< endl;
+	out2 << "Retrieving House Position of agent Before..."  << endl;
+	out2 << "House Position(X,Y)" << loc2[0]<< ","<<loc2[1] << endl;
+
+
+
+	updateLocationProperties(); 
+
+	
+
+	std::vector<Location*> locationList;
+	locationSpace->getObjectsAt(repast::Point<int>(loc[0], loc[1]), locationList);
+	int mz = locationList[0]->getMaizeZone();
+	int z = locationList[0]->getZone();
+	int y = yieldFromPdsi(z,mz);
+	locationList[0]->calculateYield(y, 0, yieldGen->next());// change yield to 0 for assigned field
+ 	
+ 	std::cerr << "Changing expected yield of field (X,Y)"<<loc[0] <<","<< loc[1]<<" to zero" << std::endl;
+	out2 << "Changing expected yield of field (X,Y)"<<loc[0] <<","<< loc[1]<<" to zero" << endl;
+
+	writeOutputToFile();
+	year++;
+	updateHouseholdProperties();
+
+	
+
+	id = household->getId();
+	locationSpace->getLocation(household->getAssignedField()->getId(), loc3);
+	householdSpace->getLocation(id,loc4);
+
+
+	std::cerr << "Retrieving AgentId... " << std::endl;
+	std::cerr << "AgentId: " <<id<< std::endl;
+	std::cerr << "Retrieving field Position of agent after making decision..."  << std::endl;
+	std::cerr << "Field Position(X,Y): " <<loc3[0]<<","<<loc3[1]<< std::endl;
+	std::cerr << "Retrieving House Position of agent after making decision..."  << std::endl;
+	std::cerr << "House Position(X,Y)" << loc4[0]<< ","<<loc4[1] << std::endl;
+	
+	out2 << "Retrieving AgentId... " << endl;
+	out2 << "AgentId: " <<id<< endl;
+	out2 << "Retrieving field Position of agent After Making Decision..."  << endl;
+	out2 << "Field Position(X,Y): " <<loc3[0]<<","<<loc3[1]<< endl;
+	out2 << "Retrieving House Position of agent After Making Decision..."  << endl;
+	out2 << "House Position(X,Y)" << loc4[0]<< ","<<loc4[1] << endl;
+
+	if ((loc[0] != loc3[0]) || (loc[1] != loc3[1])){
+		if ((loc2[0]==loc4[0])&&(loc2[1]==loc4[1])){
+			std::cerr << "Agent"<<id<<" has correctly moved their field due to providing insufficient maize and remained at the same household" << std::endl;
+			out2 << "Agent"<<id<<" has correctly moved their field due to providing insufficient maize and remained at the same household" << endl;
+		}
+		
+	}
+
+}
+
+
+
+
+
+
