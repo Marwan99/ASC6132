@@ -1039,6 +1039,39 @@ void AnasaziModel::testDeathAge(int deathAge){
 	}
 }
 
+void AnasaziModel::testInitAgent()
+{
+	int mStorage = 1200;
+	int bornAge = 0;
+	int deathAge = 30;
+	int agentNumber = 1001;
+	std::vector<int> field_location;
+
+	int rank = repast::RepastProcess::instance()->rank();
+	repast::AgentId id1(agentNumber, rank, 1);
+
+	Household* newAgent = new Household(id1, bornAge, deathAge, mStorage);
+	context.addAgent(newAgent);
+	householdSpace->moveTo(id1, repast::Point<int>(0, 0));
+	fieldSearch(newAgent);
+	locationSpace->getLocation(newAgent->getAssignedField()->getId(), field_location);
+	int checkId = newAgent->getId().id();
+
+	std::cout << "Field location: (" << field_location[0] << ", " << field_location[1] << ").\n";
+
+	std::cout << "Created an agent with the Id: \n" << agentNumber << std::endl;
+
+	std::cout << "Checking the agent Id: \n" << checkId << std::endl;
+
+	if (agentNumber == checkId)
+	{
+		std:cout << "Checked Id matched the actual Id. Test passed." << std::endl;
+	}
+	else
+	{
+		std::cout << "Checked Id didn't match the actual Id. Test failed." << std::endl;
+	}
+}
 
 
 

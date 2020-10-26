@@ -117,6 +117,12 @@ public:
 
 	//Test 5 methods
 	void FieldTest();
+
+	// Test 1 methods
+	void testInitAgent();
 };
+
+
+
 
 #endif

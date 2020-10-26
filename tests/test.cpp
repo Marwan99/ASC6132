@@ -6,7 +6,25 @@
 #include "Household.h"
 #include <iomanip>
 
+void test1(int argc, char** argv){
 
+    /* Test setup ---------------------------------------------------*/
+    std::string configFile = argv[1]; // The name of the configuration file
+    std::string propsFile  = argv[2]; // The name of the properties file
+    boost::mpi::communicator* world;
+
+    repast::RepastProcess::init(configFile);
+    world = new boost::mpi::communicator; // confirm if this is needed
+
+    /* Test body ------------------------------------------------------*/
+    AnasaziModel* testModel = new AnasaziModel(propsFile, argc, argv, world);
+    testModel->initAgents();
+    testModel->testInitAgent();
+
+    /* Teardown-----------------------------------------------------*/
+    delete testModel;
+    repast::RepastProcess::instance()->done();
+}
 
 void test2(int argc, char** argv){
 
@@ -121,7 +139,7 @@ int main(int argc, char** argv){
     boost::mpi::environment env(argc, argv);
 	
     std::cout << "\nStarting test 1...\n";
-    /*Insert test 1 function here*/
+    test1(argc, argv);
     std::cout << "----------------------------------\n\n";
 
     std::cout << "Starting test 2...\n";
