@@ -4,6 +4,10 @@
 #include "repast_hpc/SharedDiscreteSpace.h"
 #include <stdio.h>
 #include "repast_hpc/Random.h"
+#include "repast_hpc/Properties.h"
+#include "repast_hpc/Point.h"
+#include <unordered_set>
+
 
 Household::Household(repast::AgentId id, int a, int deAge, int mStorage)
 {
@@ -43,7 +47,9 @@ bool Household::death()
 {
 	if(age>=deathAge)
 	{
-			return true;
+		repast::AgentId id(householdId.id(),householdId.currentRank(),3);
+		householdId = id;
+		return true;
 	}
 	else
 	{
@@ -72,4 +78,32 @@ void Household::nextYear(int needs)
 void Household::chooseField(Location* Field)
 {
 	assignedField = Field;
+}
+
+void Household::calculateHappiness(bool fission, std::unordered_set<int> currentNeighbours, std::unordered_set<int> deadNeighbours)
+{
+
+
+
+	//Happiness = 
+	
+
+}
+
+int Household::getExcessMaize(){
+
+
+
+}
+
+void Household::updateBias(std::vector<repast::AgentId> currentNeighbours)
+{
+
+
+}
+
+double Household::getBias()
+{
+	
+
 }

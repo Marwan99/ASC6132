@@ -24,4 +24,17 @@ fertility.prop = 0.11489
 harvest.adj = 0.97621
 new.household.ini.maize = 0.33000
 
+bias.Mu = 1
+bias.Variance = 1
+Influence.Radius = 10
+excess.Maize.Threshold = 800
+newbies.factor = 1
+Immigration.variance = 1
+delta.neighbours.weight = 1
+expectations.weight = 1
+fission.weight =1 
+death.weight =1
+migration.happiness.variance = 1
+migration.year = 25
+
 result.file = NumberOfHousehold.csv

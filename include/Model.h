@@ -9,8 +9,10 @@
 #include "repast_hpc/GridComponents.h"
 #include "repast_hpc/Random.h"
 #include <math.h>
+#include <unordered_set>
 
 #include "Household.h"
+
 
 #define NUMBER_OF_YEARS 551
 
@@ -21,6 +23,7 @@ private:
 	int boardSizeX, boardSizeY, procX, procY, bufferSize;
 	int randomSeed;
 	int houseID = 0;
+	std::queue<int> maizeExcessHistory;
 
 	std::ofstream out;
 
@@ -43,6 +46,20 @@ private:
 		double fertilityProbability;
 		double harvestAdjustment;
 		double maizeStorageRatio;
+
+		double biasMu;
+        double biasVarience;
+        int influenceRadius;
+        int excessMaizeThreshold;
+        int newbiesFactor;
+        double immigrationVarience;
+        double deltaNeighboursWeight;
+        double expectationsWeight;
+        double fissionsWeight;
+        double deathWeight;
+        double migrationHappinessVariance;
+		int Migrationyear;
+		
 	} param;
 
 	struct PDSI
@@ -107,7 +124,10 @@ public:
 	bool fieldSearch(Household* household);
 	void removeHousehold(Household* household);
 	bool relocateHousehold(Household* household);
+	void migration();
+	void calculateNewbiesFromMaize();
 
+	
 	// Test 3 methods
 	void testDeathAge(int deathAge, std::ofstream* log_file);
 

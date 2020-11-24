@@ -74,6 +74,7 @@ AnasaziModel::AnasaziModel(std::string propsFile, int argc, char** argv, boost::
 	context.addProjection(householdSpace);
 	locationContext.addProjection(locationSpace);
 
+//Existing Parameters 
 	param.startYear = repast::strToInt(props->getProperty("start.year"));
 	param.endYear = repast::strToInt(props->getProperty("end.year"));
 	param.maxStorageYear = repast::strToInt(props->getProperty("max.store.year"));
@@ -87,6 +88,22 @@ AnasaziModel::AnasaziModel(std::string propsFile, int argc, char** argv, boost::
 	param.initMinCorn = repast::strToInt(props->getProperty("initial.min.corn"));
 	param.initMaxCorn = repast::strToInt(props->getProperty("initial.max.corn"));
 
+// Parameters added by team for migration and yield prediction 
+	param.Migrationyear = repast::strToInt(props->getProperty("migration.year"));
+	param.biasVarience = repast::strToDouble(props->getProperty("bias.Variance"));
+    param.influenceRadius = repast::strToInt(props->getProperty("Influence.Radius"));
+    param.excessMaizeThreshold = repast::strToInt(props->getProperty("excess.Maize.Threshold"));
+	param.newbiesFactor = repast::strToInt(props->getProperty("newbies.factor"));
+	
+	param.biasMu = repast::strToDouble(props->getProperty("bias.Mu"));
+    param.immigrationVarience = repast::strToDouble(props->getProperty("Immigration.variance"));
+    param.deltaNeighboursWeight = repast::strToDouble(props->getProperty("delta.neighbours.weight"));
+    param.expectationsWeight = repast::strToDouble(props->getProperty("expectations.weight"));
+    param.fissionsWeight = repast::strToDouble(props->getProperty("fission.weight"));
+    param.deathWeight = repast::strToDouble(props->getProperty("death.weight"));
+    param.migrationHappinessVariance = repast::strToDouble(props->getProperty("migration.happiness.variance"));
+	
+// Existing Parameters 
 	param.annualVariance = repast::strToDouble(props->getProperty("annual.variance"));
 	param.spatialVariance = repast::strToDouble(props->getProperty("spatial.variance"));
 	param.fertilityProbability = repast::strToDouble(props->getProperty("fertility.prop"));
@@ -139,7 +156,7 @@ void AnasaziModel::initAgents()
 	repast::IntUniformGenerator yGen = repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,boardSizeY));
 	for(int i =0; i< noOfAgents;i++)
 	{
-		repast::AgentId id(houseID, rank, 2);
+		repast::AgentId id(houseID, rank, 2); //Agent type 1 = field, agent type 2 = household, agent type 3 = dead house 
 		int initAge = initAgeGen->next();
 		int mStorage = initMaizeGen->next();
 		Household* agent = new Household(id, initAge, deathAgeGen->next(), mStorage);
@@ -191,9 +208,33 @@ void AnasaziModel::initAgents()
 			context.removeAgent(id);
 		}
 		else
-		{
+		{	
 			local_agents_iter++;
 			fieldSearch(household);
+
+
+			std::vector<Household*> currentNeighbours;
+			std::unordered_set<int> Neighbours;
+
+			int influenceRadius = param.influenceRadius;
+			std::vector<int> agentLoc;
+			repast::AgentId id = household->getId();
+			
+			householdSpace->getLocation(id, agentLoc);
+			repast::Point<int> center(agentLoc);
+			repast::Moore2DGridQuery<Household> moore2DQuery(householdSpace);
+			moore2DQuery.query(center, influenceRadius, false, currentNeighbours);
+
+			std::vector<Household*>::iterator CurrentNeighbour = currentNeighbours.begin();
+			if (currentNeighbours.empty() == false){
+				while(CurrentNeighbour != currentNeighbours.end()){
+					Neighbours.insert((*CurrentNeighbour)->getId().id());
+					CurrentNeighbour++;
+				}
+			}
+			std::cout << "Agent " << id.id() << " neighbours:" << std::endl;
+			for (const int& x: Neighbours) std::cout << " " << x;
+  			std::cout <<  std::endl;
 		}
 	}
 }
@@ -204,6 +245,7 @@ void AnasaziModel::doPerTick()
 	writeOutputToFile();
 	year++;
 	updateHouseholdProperties();
+	migration();
 }
 
 void AnasaziModel::initSchedule(repast::ScheduleRunner& runner)
@@ -563,21 +605,24 @@ void AnasaziModel::updateHouseholdProperties()
 {
 	repast::SharedContext<Household>::const_iterator local_agents_iter = context.begin();
 	repast::SharedContext<Household>::const_iterator local_agents_end = context.end();
+	std::vector<bool> fissioned; 
+	int i = 0;
 
 	while(local_agents_iter != local_agents_end)
-	{
+	{	
+		bool fissioned[i] = {0}; // change to be inside household class 
 		Household* household = (&**local_agents_iter);
 		if(household->death())
 		{
 			local_agents_iter++;
-			removeHousehold(household);
-
+			// removeHousehold(household);
 		}
 		else
 		{
 			local_agents_iter++;
 			if(household->fission(param.minFissionAge,param.maxFissionAge, fissionGen->next(), param.fertilityProbability))
 			{
+				fissioned[i] = 1; 
 				int rank = repast::RepastProcess::instance()->rank();
 				repast::AgentId id(houseID, rank, 2);
 				int mStorage = household->splitMaizeStored(param.maizeStorageRatio);
@@ -591,6 +636,7 @@ void AnasaziModel::updateHouseholdProperties()
 				houseID++;
 			}
 
+
 			bool fieldFound = true;
 			if(!(household->checkMaize(param.householdNeed)))
 			{
@@ -601,6 +647,68 @@ void AnasaziModel::updateHouseholdProperties()
 				household->nextYear(param.householdNeed);
 			}
 		}
+		i++;
+	}
+
+	local_agents_iter = context.begin();
+	i = 0;
+	while(local_agents_iter != local_agents_end){ // add as method in household class 
+		
+		Household* household = (&**local_agents_iter);
+		local_agents_iter++;
+		std::vector<Household*> currentNeighbours;
+		std::unordered_set<int> Neighbours;
+
+		int influenceRadius = param.influenceRadius;
+		std::unordered_set<int> DeadNeighbours;
+		std::vector<int> agentLoc;
+		repast::AgentId id = household->getId();
+
+		if(id.agentType() != 3){
+			householdSpace->getLocation(id, agentLoc);
+			repast::Point<int> center(agentLoc);
+			repast::Moore2DGridQuery<Household> moore2DQuery(householdSpace);
+			moore2DQuery.query(center, influenceRadius, false, currentNeighbours);
+
+			std::vector<Household*>::iterator CurrentNeighbour = currentNeighbours.begin();
+			if (currentNeighbours.empty() == false){
+				while(CurrentNeighbour != currentNeighbours.end()){
+
+					repast::AgentId idt = (*CurrentNeighbour)->getId();
+					int temp = idt.agentType();
+					if (temp == 3)
+					{
+						temp = idt.id();
+						DeadNeighbours.insert(temp);
+					}
+					else
+					{
+						temp = idt.id();
+						Neighbours.insert(temp);
+					}
+					CurrentNeighbour++;
+				}
+				std::cout << "Agent " << id.id() << " neighbours:" << std::endl;
+				for (const int& x: Neighbours) std::cout << " " << x;
+				std::cout <<  std::endl;
+			}else{
+				std::cout << "Agent " << id.id() << " neighbours:" << std::endl;
+				std::cout << "No neighbours:" << std::endl;
+			}
+		}
+		 // household->calculateHappiness(fissioned[i], Neighbours, DeadNeighbours);
+		i++;
+	}
+
+	local_agents_iter = context.begin();
+	while(local_agents_iter != local_agents_end) // add dead neighbours to unorder_set then pass to happiness function 
+	{
+		Household* household = (&**local_agents_iter);
+		local_agents_iter++;
+		if(household->getId().agentType() == 3)
+		{
+			removeHousehold(household);
+		}	
 	}
 }
 
@@ -657,7 +765,10 @@ void AnasaziModel::removeHousehold(Household* household)
 	repast::AgentId id = household->getId();
 
 	std::vector<int> loc;
-	householdSpace->getLocation(id, loc);
+
+	repast::AgentId Temp(id.id(),id.currentRank(),2);
+
+	householdSpace->getLocation(Temp, loc);
 
 	std::vector<Location*> locationList;
 	std::vector<Household*> householdList;
@@ -678,6 +789,7 @@ void AnasaziModel::removeHousehold(Household* household)
 		}
 	}
 
+	context.removeAgent(Temp);
 	context.removeAgent(id);
 }
 
@@ -1134,6 +1246,21 @@ void AnasaziModel::testOutputFile(std::ofstream* log_file)
 	{
 		logger.print("Output file didn't match the simulation values. Test failed");
 	}
+}
+
+void AnasaziModel::migration(){
+
+	std::cout << "Migration" << std::endl;
+
+
+}
+
+void AnasaziModel::calculateNewbiesFromMaize(){
+
+
+
+
+
 }
 
 

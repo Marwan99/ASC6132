@@ -6,6 +6,7 @@
 #include "repast_hpc/SharedDiscreteSpace.h"
 #include "repast_hpc/Random.h"
 #include "Location.h"
+#include <unordered_set>
 
 class Household{
 private:
@@ -14,6 +15,11 @@ private:
 	int maizeStorage;
 	int age;
 	int deathAge;
+	std::queue<double> Happiness; 
+	std::unordered_set<int> prevNeighbours;
+	double bias;
+	double biasMu;
+	
 
 public:
 	Household(repast::AgentId id,int a, int deathAge, int mStorage);
@@ -31,6 +37,10 @@ public:
 	bool fission(int minFissionAge, int maxFissionAge, double gen, double fProb);
 	void nextYear(int needs);
 	void chooseField(Location* Field);
+	void calculateHappiness(bool fission, std::unordered_set<int> currentNeighbours, std::unordered_set<int> deadNeighbours);
+	int getExcessMaize();
+	void updateBias(std::vector<repast::AgentId> currentNeighbours);
+	double getBias(); 
 };
 
 #endif
