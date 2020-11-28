@@ -537,6 +537,7 @@ void AnasaziModel::checkWaterConditions()
 
 void AnasaziModel::writeOutputToFile()
 {
+	population[year-param.startYear] = context.size(); 
 	out << year << "," <<  context.size() << std::endl;
 }
 

@@ -89,6 +89,8 @@ private:
 
 
 public:
+	int population[NUMBER_OF_YEARS];
+
 	AnasaziModel(std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm);
 	~AnasaziModel();
 	void initAgents();
