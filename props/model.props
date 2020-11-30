@@ -7,7 +7,7 @@ proc.per.y = 1
 grid.buffer = 0
 
 start.year = 800
-end.year = 1000
+end.year = 850
 max.store.year = 2
 max.storage = 1600
 household.need = 800
@@ -24,8 +24,8 @@ fertility.prop = 0.11489
 harvest.adj = 0.97621
 new.household.ini.maize = 0.33000
 
-bias.Mu = 1
-bias.Variance = 1
+bias.Mu = 0.1
+bias.Variance = 0.30000
 Influence.Radius = 10
 excess.Maize.Threshold = 800
 newbies.factor = 1

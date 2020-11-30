@@ -27,10 +27,11 @@ void Location::setZones(int z, int mz){
 
 void Location::setState(int s){
 	state = s;
+
 }
 
 //get expected field harvest
-int Location::getExpectedYield(){
+double Location::getExpectedYield(){
 	return expectedHarvest;
 }
 

@@ -23,6 +23,7 @@ private:
 	int boardSizeX, boardSizeY, procX, procY, bufferSize;
 	int randomSeed;
 	int houseID = 0;
+	std::unordered_set<int> Neighbours;
 	std::queue<int> maizeExcessHistory;
 
 	std::ofstream out;
@@ -48,7 +49,7 @@ private:
 		double maizeStorageRatio;
 
 		double biasMu;
-        double biasVarience;
+        double biasVariance;
         int influenceRadius;
         int excessMaizeThreshold;
         int newbiesFactor;
@@ -104,6 +105,7 @@ private:
 	repast::IntUniformGenerator* initAgeGen;// = repast::Random::instance()->createUniIntGenerator(0,29);
 	repast::IntUniformGenerator* initMaizeGen;// = repast::Random::instance()->createUniIntGenerator(1000,1600);
 
+	repast::NormalGenerator* biasGen;// = repast::Random::instance()->createNormalGenerator(1,sqrt(0.4));
 
 public:
 	AnasaziModel(std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm);
@@ -126,6 +128,8 @@ public:
 	bool relocateHousehold(Household* household);
 	void migration();
 	void calculateNewbiesFromMaize();
+	void network(Household* household);
+	void updateBias(Household* household, std::unordered_set<int> currentNeighbours);
 
 	
 	// Test 3 methods

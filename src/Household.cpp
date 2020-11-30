@@ -33,7 +33,8 @@ int Household::splitMaizeStored(int percentage)
 
 bool Household::checkMaize(int needs)
 {
-	if((assignedField->getExpectedYield() + maizeStorage) > needs)
+	bias = NewBias;
+	if(((assignedField->getExpectedYield() * bias) + maizeStorage) > needs)
 	{
 		return true;
 	}
@@ -47,8 +48,6 @@ bool Household::death()
 {
 	if(age>=deathAge)
 	{
-		repast::AgentId id(householdId.id(),householdId.currentRank(),3);
-		householdId = id;
 		return true;
 	}
 	else
@@ -61,6 +60,7 @@ bool Household::fission(int minFissionAge, int maxFissionAge, double gen, double
 {
 	if((age>=minFissionAge && age<=maxFissionAge) && (gen <= fProb))
 	{
+		fissioned = 1;
 			return true;
 	}
 	else
@@ -80,14 +80,29 @@ void Household::chooseField(Location* Field)
 	assignedField = Field;
 }
 
-void Household::calculateHappiness(bool fission, std::unordered_set<int> currentNeighbours, std::unordered_set<int> deadNeighbours)
+void Household::calculateHappiness(std::unordered_set<int> currentNeighbours, std::unordered_set<int> deadAgents)
 {
-
-
-
-	//Happiness = 
+	int noPreviousNeighbours = prevNeighbours.size();
+	int noNeighbours = currentNeighbours.size(); 
+	int noDeadNeighbours = 0;	
+	double actualYield = assignedField->getExpectedYield();
+	double predictedYield = actualYield * bias; 
 	
+	for (auto N: deadAgents)
+	{
+		if (prevNeighbours.find(N) != prevNeighbours.end())
+		{
+			noDeadNeighbours++;
+		}
+	}
+	std::cout << "Total dead neighbours" << noDeadNeighbours << std::endl; 
 
+	// Happiness.push(W1*(noNeighbours- noPreviousNeighbours - noDeadNeighbours) + W2 * (actualYield - expectedYield) + W3(fissioned) + W4(NoOfDeadAgents) + Happiness.back());
+	if (Happiness.size() > 5){
+		Happiness.pop();
+	}
+	fissioned = 0;
+	prevNeighbours = currentNeighbours; 
 }
 
 int Household::getExcessMaize(){
@@ -96,14 +111,30 @@ int Household::getExcessMaize(){
 
 }
 
-void Household::updateBias(std::vector<repast::AgentId> currentNeighbours)
+void Household::setBias(double biasTemp)
 {
-
-
+	NewBias = bias - (biasMu * biasTemp);
+	if (NewBias > 2)
+	{
+		NewBias = 2;
+	}else if (NewBias < 0)
+	{
+		NewBias = 0;
+	}
+	std::cout << "Agent " << householdId << " Bias: " << NewBias << std::endl;
 }
 
 double Household::getBias()
 {
-	
-
+	return bias;
 }
+
+void Household::initVariables(std::unordered_set<int> currentNeighbours, double Mu, double happiness, double Bias)
+{
+ prevNeighbours = currentNeighbours; 
+ biasMu = Mu;
+ bias = Bias;
+ Happiness.push(happiness);
+}
+
+

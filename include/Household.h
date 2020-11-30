@@ -17,8 +17,10 @@ private:
 	int deathAge;
 	std::queue<double> Happiness; 
 	std::unordered_set<int> prevNeighbours;
-	double bias;
+	double bias = 1;
 	double biasMu;
+	double NewBias;
+	bool fissioned;
 	
 
 public:
@@ -37,10 +39,11 @@ public:
 	bool fission(int minFissionAge, int maxFissionAge, double gen, double fProb);
 	void nextYear(int needs);
 	void chooseField(Location* Field);
-	void calculateHappiness(bool fission, std::unordered_set<int> currentNeighbours, std::unordered_set<int> deadNeighbours);
+	void calculateHappiness(std::unordered_set<int> currentNeighbours, std::unordered_set<int> deadAgents);
 	int getExcessMaize();
-	void updateBias(std::vector<repast::AgentId> currentNeighbours);
+	void setBias(double Bias);
 	double getBias(); 
+	void initVariables(std::unordered_set<int> currentNeighbours, double Mu, double happiness, double Bias);
 };
 
 #endif
