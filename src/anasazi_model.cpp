@@ -8,29 +8,32 @@
 
 void anasazi_model(int* result, unsigned int k, char * config_file, char * parameters_file, const MPI_Comm & comm)
 {
-	std::cout << "Inside cpp now.. \n";
+	std::cout << "Inside cpp now " << getpid() << std::endl;
 	
 	std::string configFile(config_file); // The name of the configuration file
 	std::string propsFile(parameters_file); // The name of the properties file
-	repast::RepastProcess::init(configFile);
+	// std::cout << "got: " << configFile << " and " << propsFile << std::endl;
 	
-	std::cout << "Repast initialised\n";
 	// boost::mpi::environment env();
 	boost::mpi::communicator* world;
 	world = new boost::mpi::communicator(comm, boost::mpi::comm_attach);
-	std::cout << "world created\n";
-	char *argv_mock[2] = {config_file, parameters_file};
+	std::cout << "world created, rank " << world->rank() << std::endl;
 
-	AnasaziModel* model = new AnasaziModel(propsFile, 2, argv_mock, world);
+	repast::RepastProcess::init(configFile);
+	std::cout << "Repast initialised\n";
+	char *argv_mock[3] = {"lol", config_file, parameters_file};
+
+	AnasaziModel* model = new AnasaziModel(propsFile, 3, argv_mock, world);
 	repast::ScheduleRunner& runner = repast::RepastProcess::instance()->getScheduleRunner();
-
+	std::cout << "Runner created\n";
 	model->initAgents();
+	std::cout << "Agent initialized\n";
 	model->initSchedule(runner);
 
 	runner.run();
 
-	k = NUMBER_OF_YEARS;
-	result = model->population;
+	for(int i = 0; i<551; i++)
+		result[i] = model->population[i];
 
 	std::cout << "Simulation complete";
 
