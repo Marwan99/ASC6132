@@ -1,5 +1,5 @@
 from abcpy.probabilisticmodels import ProbabilisticModel, Discrete, InputConnector
-import anasazi_cpp.anasazi_model
+from anasazi_cpp.anasazi_model import anasazi_model
 import numpy as np
 from mpi4py import MPI
 
@@ -21,8 +21,13 @@ class Anasazi(ProbabilisticModel):
         # TODO: implement if needed
         return True
 
-    def forward_simulate(self, input_values, k, rng=np.random.RandomState()):
+    def forward_simulate(self, input_values, k, rng=np.random.RandomState(), mpi_comm=None):
         print("forward sim started")
+
+        if (mpi_comm == None):
+            print ("NO MPI")
+        else:
+            print ("Using MPI")
         
         modelProps = [
             "random.seed",
@@ -56,25 +61,21 @@ class Anasazi(ProbabilisticModel):
 
         modelPropsDict = dict(zip(modelProps, input_values))
 
-        print(modelPropsDict)
-
-        print("Is it the dict stuff??")
         params_file = "model.props"
         with open(params_file, 'w') as writer:
             for key, val in modelPropsDict.items():
                 writer.write(key + " = " + str(val) + "\n")
 
-        config_file_path = Path("config.props")
-        params_file_path = Path("model.props")
+        config_file_path = "../props/config.props"
         
-        print("Is it the before stuff??")
-        vector_of_k_samples = anasazi_model.anasazi_model(551, config_file_path, param_file_path, MPI.COMM_WORLD)
+        vector_of_k_samples = anasazi_model(551, config_file_path, params_file, MPI.COMM_WORLD)
 
-        print("Is it the after stuff??")
         # Format the output to obey API
         result = [np.array([x]) for x in vector_of_k_samples]
-        print("Is it the results stuff??")
-        print("forward sim completed")
+        
+        print(result)
+        
+        print("*** forward sim completed ***")
         return result
 
     def _check_output(self, values):
