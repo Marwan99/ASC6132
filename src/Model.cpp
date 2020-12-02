@@ -50,6 +50,64 @@ void substract_vector(std::vector<T>& a, const std::vector<T>& b)
 	}
 }
 
+AnasaziModel::AnasaziModel(std::string propsFile, boost::mpi::communicator* comm, std::string data_directory): context(comm) , locationContext(comm)
+{
+	data_dir = data_directory;
+
+	// repast::initializeSeedMarwan();
+	boardSizeX = 80;
+	boardSizeY = 120;
+
+	repast::Point<double> origin(0,0);
+	repast::Point<double> extent(boardSizeX, boardSizeY);
+	repast::GridDimensions gd (origin, extent);
+
+	int procX = 1;
+	int procY = 1;
+	int bufferSize = 0;
+
+	std::vector<int> processDims;
+	processDims.push_back(procX);
+	processDims.push_back(procY);
+	householdSpace = new repast::SharedDiscreteSpace<Household, repast::StrictBorders, repast::SimpleAdder<Household> >("AgentDiscreteSpace",gd,processDims,bufferSize, comm);
+	locationSpace = new repast::SharedDiscreteSpace<Location, repast::StrictBorders, repast::SimpleAdder<Location> >("LocationDiscreteSpace",gd,processDims,bufferSize, comm);
+
+	context.addProjection(householdSpace);
+	locationContext.addProjection(locationSpace);
+
+	param.startYear = 800;
+	param.endYear = 1350;
+	param.maxStorageYear = 2;
+	param.maxStorage = 1600;
+	param.householdNeed = 800;
+	param.minFissionAge = 17;
+	param.maxFissionAge = 27;
+	param.minDeathAge = 25;
+	param.maxDeathAge = 36;
+	param.maxDistance = 1000;
+	param.initMinCorn = 1000;
+	param.initMaxCorn = 1600;
+
+	param.annualVariance = 0.10000;
+	param.spatialVariance = 0.10000;
+	param.fertilityProbability = 0.11489;
+	param.harvestAdjustment = 0.97621;
+	param.maizeStorageRatio = 0.33000;
+
+	year = param.startYear;
+	stopAt = param.endYear - param.startYear + 1;
+	fissionGen = new repast::DoubleUniformGenerator(repast::Random::instance()->createUniDoubleGenerator(0,1));
+	deathAgeGen = new repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(param.minDeathAge,param.maxDeathAge));
+	yieldGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(0,param.annualVariance));
+	soilGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(0,param.spatialVariance));
+	initAgeGen = new repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,param.minDeathAge));
+	initMaizeGen = new repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(param.initMinCorn,param.initMaxCorn));
+
+	string resultFile = "NumberOfHousehold.csv";
+	out.open(resultFile);
+	out << "Year,Number-of-Households" << endl;
+}
+
 AnasaziModel::AnasaziModel(std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm): context(comm) , locationContext(comm)
 {
 	props = new repast::Properties(propsFile, argc, argv, comm);
@@ -134,7 +192,7 @@ void AnasaziModel::initAgents()
 	readCsvWater();
 	readCsvPdsi();
 	readCsvHydro();
-	int noOfAgents  = repast::strToInt(props->getProperty("count.of.agents"));
+	int noOfAgents  = 14;
 	repast::IntUniformGenerator xGen = repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,boardSizeX));
 	repast::IntUniformGenerator yGen = repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,boardSizeY));
 	for(int i =0; i< noOfAgents;i++)
@@ -217,7 +275,7 @@ void AnasaziModel::readCsvMap()
 	int x,y,z , mz;
 	string zone, maizeZone, temp;
 
-	std::ifstream file ("data/map.csv");//define file object and open map.csv
+	std::ifstream file (data_dir + "map.csv");//define file object and open map.csv
 	file.ignore(500,'\n');//Ignore first line
 
 	while(1)//read until end of file
@@ -317,7 +375,7 @@ void AnasaziModel::readCsvWater()
 	int type, startYear, endYear, x, y;
 	string temp;
 
-	std::ifstream file ("data/water.csv");//define file object and open water.csv
+	std::ifstream file (data_dir + "water.csv");//define file object and open water.csv
 	file.ignore(500,'\n');//Ignore first line
 	while(1)//read until end of file
 	{
@@ -356,7 +414,7 @@ void AnasaziModel::readCsvPdsi()
 	int i=0;
 	string temp;
 
-	std::ifstream file ("data/pdsi.csv");//define file object and open pdsi.csv
+	std::ifstream file (data_dir + "pdsi.csv");//define file object and open pdsi.csv
 	file.ignore(500,'\n');//Ignore first line
 
 	while(1)//read until end of file
@@ -392,7 +450,7 @@ void AnasaziModel::readCsvHydro()
 	string temp;
 	int i =0;
 
-	std::ifstream file ("data/hydro.csv");//define file object and open hydro.csv
+	std::ifstream file (data_dir + "hydro.csv");//define file object and open hydro.csv
 	file.ignore(500,'\n');//Ignore first line
 
 	while(1)//read until end of file
@@ -537,7 +595,7 @@ void AnasaziModel::checkWaterConditions()
 
 void AnasaziModel::writeOutputToFile()
 {
-	population[year-param.startYear] = context.size(); 
+	population[year-param.startYear] = context.size();
 	out << year << "," <<  context.size() << std::endl;
 }
 
