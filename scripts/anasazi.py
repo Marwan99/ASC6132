@@ -22,7 +22,7 @@ class Anasazi(ProbabilisticModel):
         return True
 
     def forward_simulate(self, input_values, k, rng=np.random.RandomState(), mpi_comm=None):
-        print("forward sim started")
+        print("--- forward sim started ---")
 
         if (mpi_comm == None):
             print ("NO MPI")
@@ -67,14 +67,14 @@ class Anasazi(ProbabilisticModel):
                 writer.write(key + " = " + str(val) + "\n")
 
         config_file_path = "../props/config.props"
-        
-        vector_of_k_samples = anasazi_model(551, config_file_path, params_file, MPI.COMM_WORLD)
+
+        vector_of_k_samples = anasazi_model(551, config_file_path, params_file)
 
         # Format the output to obey API
         result = [np.array([x]) for x in vector_of_k_samples]
         
-        print(result)
-        
+        # print(result)
+
         print("*** forward sim completed ***")
         return result
 
