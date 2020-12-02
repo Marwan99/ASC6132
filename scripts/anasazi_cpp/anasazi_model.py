@@ -62,7 +62,7 @@ class _SwigNonDynamicMeta(type):
 
 
 
-def anasazi_model(result, config_file, parameters_file, comm):
-    return _anasazi_model.anasazi_model(result, config_file, parameters_file, comm)
+def anasazi_model(result, config_file, parameters_file):
+    return _anasazi_model.anasazi_model(result, config_file, parameters_file)
 
 

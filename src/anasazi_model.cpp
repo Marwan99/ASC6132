@@ -6,24 +6,24 @@
 #include "Household.h"
 #include <iomanip>
 
-void anasazi_model(int* result, unsigned int k, char * config_file, char * parameters_file, const MPI_Comm & comm)
+void anasazi_model(int* result, unsigned int k, char * config_file, char * parameters_file)
 {
-	std::cout << "Inside cpp now " << getpid() << std::endl;
+	std::cout << "Inside cpp now, pid:" << getpid() << std::endl;
 	
 	std::string configFile(config_file); // The name of the configuration file
 	std::string propsFile(parameters_file); // The name of the properties file
-	// std::cout << "got: " << configFile << " and " << propsFile << std::endl;
 	
-	// boost::mpi::environment env();
+	// char *argv_mock[3] = {"lol", config_file, parameters_file};
+	// int lol =3;
+	// boost::mpi::environment env;
 	boost::mpi::communicator* world;
-	world = new boost::mpi::communicator(comm, boost::mpi::comm_attach);
-	std::cout << "world created, rank " << world->rank() << std::endl;
+	world = new boost::mpi::communicator;
+	std::cout << "world created... rank " << world->rank() << " of " << world->size() << std::endl;
 
-	repast::RepastProcess::init(configFile);
+	repast::RepastProcess::init("../props/config.props");
 	std::cout << "Repast initialised\n";
-	char *argv_mock[3] = {"lol", config_file, parameters_file};
 
-	AnasaziModel* model = new AnasaziModel(propsFile, 3, argv_mock, world);
+	AnasaziModel* model = new AnasaziModel(propsFile, world, "../data/");
 	repast::ScheduleRunner& runner = repast::RepastProcess::instance()->getScheduleRunner();
 	std::cout << "Runner created\n";
 	model->initAgents();
@@ -35,10 +35,10 @@ void anasazi_model(int* result, unsigned int k, char * config_file, char * param
 	for(int i = 0; i<551; i++)
 		result[i] = model->population[i];
 
-	std::cout << "Simulation complete";
-
 	delete model;
 	repast::RepastProcess::instance()->done();
+
+	std::cout << "cpp simulation complete\n";
 }
 
 int main(int argc, char** argv){
