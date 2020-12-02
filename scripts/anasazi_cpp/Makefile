@@ -40,13 +40,13 @@ cpp: build_model _anasazi_model.so anasazi_model.py clean_objects
 all: clean_all cpp
 
 build_model:
-	$(MPICXX) $(REPAST_HPC_DEFINES) $(BOOST_INCLUDE) $(REPAST_HPC_INCLUDE) -fPIC $(MODEL_INCLUDE_DIR) -c $(MODEL_SRC_DIR)/anasazi_model.cpp -o anasazi_model.o
-	$(MPICXX) $(REPAST_HPC_DEFINES) $(BOOST_INCLUDE) $(REPAST_HPC_INCLUDE) -fPIC $(MODEL_INCLUDE_DIR) -c $(MODEL_SRC_DIR)/Model.cpp -o Model.o
-	$(MPICXX) $(REPAST_HPC_DEFINES) $(BOOST_INCLUDE) $(REPAST_HPC_INCLUDE) -fPIC $(MODEL_INCLUDE_DIR) -c $(MODEL_SRC_DIR)/Household.cpp -o Household.o
-	$(MPICXX) $(REPAST_HPC_DEFINES) $(BOOST_INCLUDE) $(REPAST_HPC_INCLUDE) -fPIC $(MODEL_INCLUDE_DIR) -c $(MODEL_SRC_DIR)/Location.cpp -o Location.o
+	$(MPICXX) -O3 $(REPAST_HPC_DEFINES) $(BOOST_INCLUDE) $(REPAST_HPC_INCLUDE) -fPIC $(MODEL_INCLUDE_DIR) -c $(MODEL_SRC_DIR)/anasazi_model.cpp -o anasazi_model.o
+	$(MPICXX) -O3 $(REPAST_HPC_DEFINES) $(BOOST_INCLUDE) $(REPAST_HPC_INCLUDE) -fPIC $(MODEL_INCLUDE_DIR) -c $(MODEL_SRC_DIR)/Model.cpp -o Model.o
+	$(MPICXX) -O3 $(REPAST_HPC_DEFINES) $(BOOST_INCLUDE) $(REPAST_HPC_INCLUDE) -fPIC $(MODEL_INCLUDE_DIR) -c $(MODEL_SRC_DIR)/Household.cpp -o Household.o
+	$(MPICXX) -O3 $(REPAST_HPC_DEFINES) $(BOOST_INCLUDE) $(REPAST_HPC_INCLUDE) -fPIC $(MODEL_INCLUDE_DIR) -c $(MODEL_SRC_DIR)/Location.cpp -o Location.o
 
 clean_objects:
-	rm $(MODEL_OBJ_DIR) mpi4py.i
+	rm $(MODEL_OBJ_DIR) mpi4py.i* numpy.i*
 
 clean_all:
 	rm _anasazi_model.so anasazi_model.py
@@ -60,7 +60,7 @@ clean_all:
 %.o: %.cpp
 	echo "Build 1"
 	# $(BOOST_INCLUDE)
-	$(CC) $(CPPFLAGS) $(MPI_INCLUDE) -I $(INCLUDEPATHNUMPY) $(INCLUDEPATH)  -fno-lto -c $< -o $@
+	$(CC) -O3 $(CPPFLAGS) $(MPI_INCLUDE) -I $(INCLUDEPATHNUMPY) $(INCLUDEPATH)  -fno-lto -c $< -o $@
 
 _%.so: %_wrap.o
 	echo "Build 2"
