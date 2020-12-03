@@ -7,35 +7,27 @@ from abcpy.backends import BackendDummy as Backend
 # from abcpy.backends import BackendMPI as Backend
 from abcpy.output import Journal
 from abcpy.continuousmodels import Uniform, Normal as Gaussian
+from abcpy.discretemodels import DiscreteUniform
 from anasazi import Anasazi
 import numpy as np
 
 
 modelParameters = [
-    Uniform([[1], [1]], name="random.seed"),            # "random.seed",
-    Uniform([[14], [14]], name="count.of.agents"),      # "count.of.agents,
-    Uniform([[80], [80]], name="board.size.x"),         # "board.size.x",
-    Uniform([[120], [120]], name="board.size.y"),       # "board.size.y",
-    Uniform([[1], [1]], name="proc.per.x"),             # "proc.per.x",
-    Uniform([[1], [1]], name="proc.per.y"),             # "proc.per.y",
-    Uniform([[0], [0]], name="grid.buffer"),            # "grid.buffer",
-    Uniform([[800], [800]], name="start.year"),         # "start.year",
-    Uniform([[1350], [1350]], name="end.year"),         # "end.year",
-    Uniform([[1], [3]], name="max.store.year"),         # "max.store.year",
-    Uniform([[1000], [2000]], name="max.storage"),      # "max.storage",
-    Uniform([[600], [1000]], name="household.need"),    # "household.need",
-    Uniform([[12], [21]], name="min.fission.age",),     # "min.fission.age",
-    Uniform([[24], [30]], name="max.fission.age",),     # "max.fission.age",
-    Uniform([[20], [30]], name="min.death.age"),        # "min.death.age",
-    Uniform([[30], [40]], name="max.death.age"),        # "max.death.age",
-    Uniform([[500], [1500]], name="max.distance"),      # "max.distance",
-    Uniform([[150], [200]], name="initial.min.corn"),   # "initial.min.corn",
-    Uniform([[150], [200]], name="initial.max.corn"),   # "initial.max.corn",
+    DiscreteUniform([1, 3], name="max.store.year"),         # "max.store.year",
+    DiscreteUniform([1000, 2000], name="max.storage"),      # "max.storage",
+    DiscreteUniform([600, 1000], name="household.need"),    # "household.need",
+    DiscreteUniform([12, 21], name="min.fission.age",),     # "min.fission.age",
+    DiscreteUniform([24, 30], name="max.fission.age",),     # "max.fission.age",
+    DiscreteUniform([20, 30], name="min.death.age"),        # "min.death.age",
+    DiscreteUniform([30, 40], name="max.death.age"),        # "max.death.age",
+    DiscreteUniform([500, 1500], name="max.distance"),      # "max.distance",
+    DiscreteUniform([150, 200], name="initial.min.corn"),   # "initial.min.corn",
+    DiscreteUniform([150, 200], name="initial.max.corn"),   # "initial.max.corn",
+    
     Uniform([[150], [200]], name="annual.variance"),    # "annual.variance",
     Uniform([[150], [200]], name="spatial.variance",),  # "spatial.variance",
     Uniform([[150], [200]], name="fertility.prop"),     # "fertility.prop",
     Uniform([[150], [200]], name="harvest.adj"),        # "harvest.adj",
-    Uniform([[150], [200]], name="result.file"),        # "result.file",
     Uniform([[0], [1]], name="new.household.ini.maize") # "new.household.ini.maize"
 ]
 
