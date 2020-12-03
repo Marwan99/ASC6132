@@ -1,5 +1,5 @@
 from abcpy.probabilisticmodels import ProbabilisticModel, Discrete, InputConnector
-from anasazi_cpp.anasazi_model import anasazi_model
+from anasazi_cpp.anasazi_model import *
 import numpy as np
 from mpi4py import MPI
 
@@ -18,7 +18,19 @@ class Anasazi(ProbabilisticModel):
         super().__init__(input_connector, name)
 
     def _check_input(self, input_values):
-        # TODO: implement if needed
+
+        # Check min.fission.age is smaller than max.fission.age
+        if(input_values[3] > input_values[4]):
+            return False
+
+        # Check min.death.age is smaller than max.death.age
+        if(input_values[5] > input_values[6]):
+            return False
+
+        # Check initial.min.corn is smaller than initial.max.corn
+        if(input_values[8] > input_values[9]):
+            return False
+
         return True
 
     def forward_simulate(self, input_values, k, rng=np.random.RandomState(), mpi_comm=None):
@@ -28,47 +40,20 @@ class Anasazi(ProbabilisticModel):
             print ("NO MPI")
         else:
             print ("Using MPI")
-        
-        modelProps = [
-            "random.seed",
-            "count.of.agents",
-            "board.size.x",
-            "board.size.y",
-            "proc.per.x",
-            "proc.per.y",
-            "grid.buffer",
-            "start.year",
-            "end.year",
-            "max.store.year",
-            "max.storage",
-            "household.need",
-            "min.fission.age",
-            "max.fission.age",
-            "min.death.age",
-            "max.death.age",
-            "max.distance",
-            "initial.min.corn",
-            "initial.max.corn",
-            "annual.variance",
-            "spatial.variance",
-            "fertility.prop",
-            "harvest.adj",
-            "result.file",
-            "new.household.ini.maize"
-        ]
 
-        assert len(modelProps) == len(input_values)
+        int_params = []
+        double_params = []
 
-        modelPropsDict = dict(zip(modelProps, input_values))
+        for value in input_values:
+            if isinstance(value, np.int64):
+                int_params.append(value.astype('int32'))
+            elif isinstance(value, float):
+                double_params.append(value)
 
-        params_file = "model.props"
-        with open(params_file, 'w') as writer:
-            for key, val in modelPropsDict.items():
-                writer.write(key + " = " + str(val) + "\n")
+        print("int params len: " + str(len(int_params)))
+        print("double params len: " + str(len(double_params)))
 
-        config_file_path = "../props/config.props"
-
-        vector_of_k_samples = anasazi_model(551, config_file_path, params_file)
+        vector_of_k_samples = anasazi_model(551, int_params, double_params)
 
         # Format the output to obey API
         result = [np.array([x]) for x in vector_of_k_samples]

@@ -93,8 +93,8 @@ public:
 	int population[NUMBER_OF_YEARS];
 
 	AnasaziModel(std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm);
-	AnasaziModel(std::string propsFile, boost::mpi::communicator* comm, std::string data_dir);
-	~AnasaziModel();
+	AnasaziModel(int* int_params, double* double_params, boost::mpi::communicator* comm, std::string data_dir);
+	// ~AnasaziModel();
 	void initAgents();
 	void initSchedule(repast::ScheduleRunner& runner);
 	void doPerTick();

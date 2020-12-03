@@ -6,13 +6,10 @@
 #include "Household.h"
 #include <iomanip>
 
-void anasazi_model(int* result, unsigned int k, char * config_file, char * parameters_file)
+void anasazi_model(int* result, unsigned int k, int * int_params, unsigned int int_array_len, double * double_params, unsigned int double_array_len)
 {
 	std::cout << "Inside cpp now, pid:" << getpid() << std::endl;
-	
-	std::string configFile(config_file); // The name of the configuration file
-	std::string propsFile(parameters_file); // The name of the properties file
-	
+		
 	// char *argv_mock[3] = {"lol", config_file, parameters_file};
 	// int lol =3;
 	// boost::mpi::environment env;
@@ -23,14 +20,16 @@ void anasazi_model(int* result, unsigned int k, char * config_file, char * param
 	repast::RepastProcess::init("../props/config.props");
 	std::cout << "Repast initialised\n";
 
-	AnasaziModel* model = new AnasaziModel(propsFile, world, "../data/");
+	AnasaziModel* model = new AnasaziModel(int_params, double_params, world, "../data/");
 	repast::ScheduleRunner& runner = repast::RepastProcess::instance()->getScheduleRunner();
 	std::cout << "Runner created\n";
 	model->initAgents();
 	std::cout << "Agent initialized\n";
 	model->initSchedule(runner);
 
+	std::cout << "Sim running ";
 	runner.run();
+	std::cout << std::endl;
 
 	for(int i = 0; i<551; i++)
 		result[i] = model->population[i];

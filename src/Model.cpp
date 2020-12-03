@@ -50,7 +50,7 @@ void substract_vector(std::vector<T>& a, const std::vector<T>& b)
 	}
 }
 
-AnasaziModel::AnasaziModel(std::string propsFile, boost::mpi::communicator* comm, std::string data_directory): context(comm) , locationContext(comm)
+AnasaziModel::AnasaziModel(int* int_params, double* double_params, boost::mpi::communicator* comm, std::string data_directory): context(comm) , locationContext(comm)
 {
 	data_dir = data_directory;
 
@@ -77,22 +77,22 @@ AnasaziModel::AnasaziModel(std::string propsFile, boost::mpi::communicator* comm
 
 	param.startYear = 800;
 	param.endYear = 1350;
-	param.maxStorageYear = 2;
-	param.maxStorage = 1600;
-	param.householdNeed = 800;
-	param.minFissionAge = 17;
-	param.maxFissionAge = 27;
-	param.minDeathAge = 25;
-	param.maxDeathAge = 36;
-	param.maxDistance = 1000;
-	param.initMinCorn = 1000;
-	param.initMaxCorn = 1600;
+	param.maxStorageYear = int_params[0];
+	param.maxStorage = int_params[1];
+	param.householdNeed = int_params[2];
+	param.minFissionAge = int_params[3];
+	param.maxFissionAge = int_params[4];
+	param.minDeathAge = int_params[5];
+	param.maxDeathAge = int_params[6];
+	param.maxDistance = int_params[7];
+	param.initMinCorn = int_params[8];
+	param.initMaxCorn = int_params[9];
 
-	param.annualVariance = 0.10000;
-	param.spatialVariance = 0.10000;
-	param.fertilityProbability = 0.11489;
-	param.harvestAdjustment = 0.97621;
-	param.maizeStorageRatio = 0.33000;
+	param.annualVariance = double_params[0];
+	param.spatialVariance = double_params[1];
+	param.fertilityProbability = double_params[2];
+	param.harvestAdjustment = double_params[3];
+	param.maizeStorageRatio = double_params[4];
 
 	year = param.startYear;
 	stopAt = param.endYear - param.startYear + 1;
@@ -165,11 +165,11 @@ AnasaziModel::AnasaziModel(std::string propsFile, int argc, char** argv, boost::
 	out << "Year,Number-of-Households" << endl;
 }
 
-AnasaziModel::~AnasaziModel()
-{
-	delete props;
-	out.close();
-}
+// AnasaziModel::~AnasaziModel()
+// {
+// 	delete props;
+// 	out.close();
+// }
 
 void AnasaziModel::initAgents()
 {
@@ -193,8 +193,10 @@ void AnasaziModel::initAgents()
 	readCsvPdsi();
 	readCsvHydro();
 	int noOfAgents  = 14;
-	repast::IntUniformGenerator xGen = repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,boardSizeX));
-	repast::IntUniformGenerator yGen = repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,boardSizeY));
+	
+	// IntUniformGenerator outputs values that are inclusive of the limits, therfore a -1 is used to avoid segfaults. 
+	repast::IntUniformGenerator xGen = repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,boardSizeX-1));
+	repast::IntUniformGenerator yGen = repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,boardSizeY-1));
 	for(int i =0; i< noOfAgents;i++)
 	{
 		repast::AgentId id(houseID, rank, 2);
@@ -258,6 +260,7 @@ void AnasaziModel::initAgents()
 
 void AnasaziModel::doPerTick()
 {
+	std::cout << ".";
 	updateLocationProperties();
 	writeOutputToFile();
 	year++;
