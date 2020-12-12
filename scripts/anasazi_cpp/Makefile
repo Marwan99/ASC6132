@@ -60,7 +60,7 @@ clean_all:
 %.o: %.cpp
 	echo "Build 1"
 	# $(BOOST_INCLUDE)
-	$(CC) -O3 $(CPPFLAGS) $(MPI_INCLUDE) -I $(INCLUDEPATHNUMPY) $(INCLUDEPATH)  -fno-lto -c $< -o $@
+	$(CC) -O3 $(CPPFLAGS) $(MPI_INCLUDE) $(BOOST_INCLUDE) -I $(INCLUDEPATHNUMPY) $(INCLUDEPATH)  -fno-lto -c $< -o $@
 
 _%.so: %_wrap.o
 	echo "Build 2"
