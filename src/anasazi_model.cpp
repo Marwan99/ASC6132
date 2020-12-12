@@ -18,16 +18,16 @@ void anasazi_model(int* result, unsigned int k, int * int_params, unsigned int i
 	std::cout << "world created... rank " << world->rank() << " of " << world->size() << std::endl;
 
 	repast::RepastProcess::init("../props/config.props");
-	std::cout << "Repast initialised\n";
+	// std::cout << "Repast initialised\n";
 
 	AnasaziModel* model = new AnasaziModel(int_params, double_params, world, "../data/");
 	repast::ScheduleRunner& runner = repast::RepastProcess::instance()->getScheduleRunner();
-	std::cout << "Runner created\n";
+	// std::cout << "Runner created\n";
 	model->initAgents();
-	std::cout << "Agent initialized\n";
+	// std::cout << "Agent initialized\n";
 	model->initSchedule(runner);
 
-	std::cout << "Sim running ";
+	// std::cout << "Sim running ";
 	runner.run();
 	std::cout << std::endl;
 
@@ -37,7 +37,7 @@ void anasazi_model(int* result, unsigned int k, int * int_params, unsigned int i
 	delete model;
 	repast::RepastProcess::instance()->done();
 
-	std::cout << "cpp simulation complete\n";
+	// std::cout << "cpp simulation complete\n";
 }
 
 int main(int argc, char** argv){

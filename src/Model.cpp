@@ -104,8 +104,8 @@ AnasaziModel::AnasaziModel(int* int_params, double* double_params, boost::mpi::c
 	initMaizeGen = new repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(param.initMinCorn,param.initMaxCorn));
 
 	string resultFile = "NumberOfHousehold.csv";
-	out.open(resultFile);
-	out << "Year,Number-of-Households" << endl;
+	// out.open(resultFile);
+	// out << "Year,Number-of-Households" << endl;
 }
 
 AnasaziModel::AnasaziModel(std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm): context(comm) , locationContext(comm)
@@ -161,8 +161,8 @@ AnasaziModel::AnasaziModel(std::string propsFile, int argc, char** argv, boost::
 	initMaizeGen = new repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(param.initMinCorn,param.initMaxCorn));
 
 	string resultFile = props->getProperty("result.file");
-	out.open(resultFile);
-	out << "Year,Number-of-Households" << endl;
+	// out.open(resultFile);
+	// out << "Year,Number-of-Households" << endl;
 }
 
 // AnasaziModel::~AnasaziModel()
@@ -260,7 +260,7 @@ void AnasaziModel::initAgents()
 
 void AnasaziModel::doPerTick()
 {
-	std::cout << ".";
+	// std::cout << ".";
 	updateLocationProperties();
 	writeOutputToFile();
 	year++;
@@ -599,7 +599,7 @@ void AnasaziModel::checkWaterConditions()
 void AnasaziModel::writeOutputToFile()
 {
 	population[year-param.startYear] = context.size();
-	out << year << "," <<  context.size() << std::endl;
+	// out << year << "," <<  context.size() << std::endl;
 }
 
 void  AnasaziModel::updateLocationProperties()
