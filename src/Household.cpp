@@ -95,20 +95,26 @@ void Household::calculateHappiness(std::unordered_set<int> currentNeighbours, st
 			noDeadNeighbours++;
 		}
 	}
-	std::cout << "Total dead neighbours" << noDeadNeighbours << std::endl; 
+	// std::cout << "Total dead neighbours " << noDeadNeighbours << std::endl; 
 
-	// Happiness.push(W1*(noNeighbours- noPreviousNeighbours - noDeadNeighbours) + W2 * (actualYield - expectedYield) + W3(fissioned) + W4(NoOfDeadAgents) + Happiness.back());
+	double temp = deltaNeighboursWeight * (noNeighbours- noPreviousNeighbours - noDeadNeighbours) + expectationsWeight * (actualYield - predictedYield) + fissionWeight * (fissioned) - deathWeight * (noDeadNeighbours) + Happiness.back();
+
+	if (temp > 200){
+		temp = 200;
+	}else if (temp < -200){
+		temp = -200;
+	}
+
+	Happiness.push(temp);
+
 	if (Happiness.size() > 5){
 		Happiness.pop();
 	}
+	
+	// std::cout << "Happiness: " << Happiness.front() << std::endl; 
+	// std::cout << "---------------------------" << std::endl;
 	fissioned = 0;
 	prevNeighbours = currentNeighbours; 
-}
-
-int Household::getExcessMaize(){
-
-
-
 }
 
 void Household::setBias(double biasTemp)
@@ -121,7 +127,7 @@ void Household::setBias(double biasTemp)
 	{
 		NewBias = 0;
 	}
-	std::cout << "Agent " << householdId << " Bias: " << NewBias << std::endl;
+	//std::cout << "Agent " << householdId << " Bias: " << NewBias << std::endl;
 }
 
 double Household::getBias()
@@ -129,12 +135,31 @@ double Household::getBias()
 	return bias;
 }
 
-void Household::initVariables(std::unordered_set<int> currentNeighbours, double Mu, double happiness, double Bias)
+void Household::initVariables(std::unordered_set<int> currentNeighbours, double Mu, double happiness, double Bias, double W1, double W2, double W3, double W4)
 {
- prevNeighbours = currentNeighbours; 
- biasMu = Mu;
- bias = Bias;
- Happiness.push(happiness);
+	prevNeighbours = currentNeighbours; 
+	biasMu = Mu;
+	bias = Bias;
+	Happiness.push(happiness);
+	deltaNeighboursWeight = W1;
+	expectationsWeight = W2;
+	fissionWeight = W3;
+	deathWeight = W4;
 }
 
+double Household::AverageHappiness(){
+	double temp = 0;
+	int N =0;
 
+	while(!Happiness.empty()){
+		temp = Happiness.front() + temp;
+		Happiness.pop();
+		N++;
+	}
+	return (temp/N); 
+}
+
+int Household::getExcessMaize()
+{
+	
+}

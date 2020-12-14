@@ -19,6 +19,7 @@
 class AnasaziModel{
 private:
 	int year;
+	int yearsSince = 0;
 	int stopAt;
 	int boardSizeX, boardSizeY, procX, procY, bufferSize;
 	int randomSeed;
@@ -52,7 +53,7 @@ private:
         double biasVariance;
         int influenceRadius;
         int excessMaizeThreshold;
-        int newbiesFactor;
+        double newbiesFactor;
         double immigrationVarience;
         double deltaNeighboursWeight;
         double expectationsWeight;
@@ -104,8 +105,10 @@ private:
 	repast::NormalGenerator* soilGen;// = repast::Random::instance()->createNormalGenerator(0,sqrt(0.1));
 	repast::IntUniformGenerator* initAgeGen;// = repast::Random::instance()->createUniIntGenerator(0,29);
 	repast::IntUniformGenerator* initMaizeGen;// = repast::Random::instance()->createUniIntGenerator(1000,1600);
+	repast::NormalGenerator* NewbGen;
 
-	repast::NormalGenerator* biasGen;// = repast::Random::instance()->createNormalGenerator(1,sqrt(0.4));
+	repast::NormalGenerator* biasGen;// = repast::Random::instance()->createNormalGenerator(1,sqrt(0.4);
+	repast::NormalGenerator* happinessGen;
 
 public:
 	AnasaziModel(std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm);
@@ -127,10 +130,10 @@ public:
 	void removeHousehold(Household* household);
 	bool relocateHousehold(Household* household);
 	void migration();
-	void calculateNewbiesFromMaize();
-	void network(Household* household);
+	double calculateNewbiesFromMaize();
+	void network(Household* Centre);
 	void updateBias(Household* household, std::unordered_set<int> currentNeighbours);
-
+	void AddAgent(double NotoAdd);
 	
 	// Test 3 methods
 	void testDeathAge(int deathAge, std::ofstream* log_file);

@@ -17,6 +17,10 @@ private:
 	int deathAge;
 	std::queue<double> Happiness; 
 	std::unordered_set<int> prevNeighbours;
+	double deltaNeighboursWeight = 1;
+	double expectationsWeight = 1;
+	double fissionWeight = 1;
+	double deathWeight = 1;
 	double bias = 1;
 	double biasMu;
 	double NewBias;
@@ -43,7 +47,8 @@ public:
 	int getExcessMaize();
 	void setBias(double Bias);
 	double getBias(); 
-	void initVariables(std::unordered_set<int> currentNeighbours, double Mu, double happiness, double Bias);
+	double AverageHappiness();
+	void initVariables(std::unordered_set<int> currentNeighbours, double Mu, double happiness, double Bias, double W1, double W2, double W3, double W4);
 };
 
 #endif
