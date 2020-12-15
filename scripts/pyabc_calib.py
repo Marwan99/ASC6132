@@ -6,9 +6,13 @@ import numpy as np
 from mpi4py import MPI
 from anasazi_cpp.anasazi_model import anasazi_model
 
+model_call_cntr = 0
+
 def model(parameters):
+    global model_call_cntr
+    model_call_cntr += 1
     # print("calling model")
-    # print(type(parameters))
+    # print(parameters)
     # print(parameters['max_storage'])
     int_params = []
     double_params = []
@@ -34,7 +38,7 @@ def model(parameters):
 #     print(double_params)
     
     ret  = anasazi_model(551, int_params, double_params).tolist()
-    print(type(ret))
+    # print(type(ret))
 
     return {"population": ret}
 
@@ -67,15 +71,20 @@ parameter_priors = pyabc.Distribution(
     spatial_variance = pyabc.RV("uniform", 0, 0.5),
     fertility_prop = pyabc.RV("uniform", 0, 0.5),
     harvest_adj = pyabc.RV("uniform", 0, 0.5),
-    new_household = pyabc.RV("uniform", 0, 0.5))    
+    new_household = pyabc.RV("uniform", 0, 0.5))  
 
-# MPI.COMM_WORLD
+MPI.COMM_WORLD
 
-abc = pyabc.ABCSMC(model, parameter_priors,distance)
+abc = pyabc.inference.ABCSMC(model, parameter_priors,distance,
+    population_size=30,
+    # sampler=pyabc.sampler.SingleCoreSampler(check_max_eval=True))
+    sampler=pyabc.sampler.MulticoreEvalParallelSampler(check_max_eval=True))
 
 db_path = ("sqlite:///" +
            os.path.join(tempfile.gettempdir(), "test.db"))
 history = abc.new(db_path, observed_data)
 
-history = abc.run(minimum_epsilon=0.2, max_nr_populations=1)
-# history = abc.run()
+history = abc.run(minimum_epsilon=0.2, max_total_nr_simulations=4)
+# history = abc.run(minimum_epsilon=0.2, max_nr_populations=2)
+
+print(model_call_cntr)
