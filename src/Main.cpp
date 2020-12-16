@@ -9,7 +9,6 @@
 
 int main(int argc, char** argv){
 
-
 	std::string configFile = argv[1]; // The name of the configuration file
 	std::string propsFile  = argv[2]; // The name of the properties file
 	bool Selector[3] = {1,1,1};

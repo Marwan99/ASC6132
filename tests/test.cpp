@@ -150,7 +150,7 @@ void test6(int argc, char** argv, std::ofstream* output_file)
 	// boost::mpi::environment env(argc, argv, file);
 	boost::mpi::communicator* world;
     bool Selector[3] = {0,0,0};
-    
+
 	repast::RepastProcess::init(configFile);
 	world = new boost::mpi::communicator; // confirm if this is needed
 
@@ -165,7 +165,6 @@ void test6(int argc, char** argv, std::ofstream* output_file)
 }
 
 int main(int argc, char** argv){
-
     std::ofstream *file = (new std::ofstream);
     file->open("test_log.txt");
 

@@ -30,7 +30,6 @@ private:
 	bool YieldPrediction;
 	bool Happiness;
 
-
 	std::ofstream out;
 
 	struct Parameters

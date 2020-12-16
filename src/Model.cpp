@@ -119,7 +119,6 @@ AnasaziModel::AnasaziModel(bool* Selector, std::string propsFile, int argc, char
 	initAgeGen = new repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,param.minDeathAge));
 	initMaizeGen = new repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(param.initMinCorn,param.initMaxCorn));
 
-	
 	Immigration = Selector[0];
 	YieldPrediction = Selector[2];
 	Happiness = Selector[3];
