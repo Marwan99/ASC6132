@@ -26,6 +26,10 @@ private:
 	int houseID = 0;
 	std::unordered_set<int> Neighbours;
 	std::queue<int> maizeExcessHistory;
+	bool Immigration;
+	bool YieldPrediction;
+	bool Happiness;
+
 
 	std::ofstream out;
 
@@ -111,7 +115,7 @@ private:
 	repast::NormalGenerator* happinessGen;
 
 public:
-	AnasaziModel(std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm);
+	AnasaziModel(bool* Selector, std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm);
 	~AnasaziModel();
 	void initAgents();
 	void initSchedule(repast::ScheduleRunner& runner);
@@ -150,6 +154,8 @@ public:
 
 	// Test 4 method
 	void testOutputFile(std::ofstream* log_file);
+
+
 };
 
 #endif

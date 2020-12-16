@@ -50,7 +50,7 @@ void substract_vector(std::vector<T>& a, const std::vector<T>& b)
 	}
 }
 
-AnasaziModel::AnasaziModel(std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm): context(comm) , locationContext(comm)
+AnasaziModel::AnasaziModel(bool* Selector, std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm): context(comm) , locationContext(comm)
 {
 	props = new repast::Properties(propsFile, argc, argv, comm);
 	boardSizeX = repast::strToInt(props->getProperty("board.size.x"));
@@ -119,9 +119,19 @@ AnasaziModel::AnasaziModel(std::string propsFile, int argc, char** argv, boost::
 	initAgeGen = new repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,param.minDeathAge));
 	initMaizeGen = new repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(param.initMinCorn,param.initMaxCorn));
 
-	biasGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(1, param.biasVariance));
-	happinessGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(0, param.biasVariance));
+	
+	Immigration = Selector[0];
+	YieldPrediction = Selector[2];
+	Happiness = Selector[3];
 
+	if (YieldPrediction){
+		biasGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(1, param.biasVariance));
+	}else{
+		biasGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(1, 0));
+	}
+	
+	happinessGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(0, param.biasVariance));
+	
 
 	string resultFile = props->getProperty("result.file");
 	out.open(resultFile);
@@ -229,9 +239,7 @@ void AnasaziModel::doPerTick()
 	updateLocationProperties();
 	writeOutputToFile();
 	year++;
-	std::cout <<"Year" << year<<std::endl;
 	updateHouseholdProperties();
-	std::cout<<"updateHouseholdProps"<<std::endl;
 	migration();
 }
 
@@ -591,7 +599,6 @@ void  AnasaziModel::updateLocationProperties()
 
 void AnasaziModel::updateHouseholdProperties()
 {
-	std::cout<<"updateHouseholdProps"<<std::endl;
 	repast::SharedContext<Household>::const_iterator local_agents_iter = context.begin();
 	repast::SharedContext<Household>::const_iterator local_agents_end = context.end();
 	std::unordered_set<int> DeadAgents;
@@ -618,16 +625,12 @@ void AnasaziModel::updateHouseholdProperties()
 
 				int mStorage = household->splitMaizeStored(param.maizeStorageRatio);
 				Household* newAgent = new Household(id_f, 0, deathAgeGen->next(), mStorage);
-				context.addAgent(newAgent);
-				std::cout<< newAgent->getId() <<std::endl;
-	
+				context.addAgent(newAgent);	
 				std::vector<int> loc;
 				householdSpace->getLocation(household->getId(), loc);
 				householdSpace->moveTo(id_f, repast::Point<int>(loc[0], loc[1]));
 				if(fieldSearch(newAgent)){
-					std::cout << "New Agent "<< houseID << " created" << std::endl;
 					network(newAgent);
-					std::cout << "Neighours found"<< std::endl;
 					newAgent->initVariables(Neighbours, param.biasMu, 180*happinessGen->next(), biasGen->next(), param.deltaNeighboursWeight, param.expectationsWeight, param.fissionsWeight, param.deathWeight);
 					updateBias(newAgent,Neighbours);
 				}
@@ -1203,67 +1206,67 @@ void AnasaziModel::migration(){
 	
 	if (param.Migrationyear == yearsSince){
 		double Newbies = calculateNewbiesFromMaize();
+		if(Happiness){
+			repast::SharedContext<Household>::const_iterator local_agents_iter = context.begin();
+			repast::SharedContext<Household>::const_iterator local_agents_end = context.end();
+			double min = 200;
+			double max = -200;
+			
 
-		std::cout << "Migration Newbies = " << Newbies << std::endl;
-		repast::SharedContext<Household>::const_iterator local_agents_iter = context.begin();
-		repast::SharedContext<Household>::const_iterator local_agents_end = context.end();
-		double min = 200;
-		double max = -200;
-		
-
-		std::vector<std::pair<double, int>> Average;
-		int i = 0;
-		while(local_agents_iter != local_agents_end){
-			Household* household = (&**local_agents_iter);
-			double temp = household->AverageHappiness();
-			if (temp < min){
-				min = temp;
+			std::vector<std::pair<double, int>> Average;
+			int i = 0;
+			while(local_agents_iter != local_agents_end){
+				Household* household = (&**local_agents_iter);
+				double temp = household->AverageHappiness();
+				if (temp < min){
+					min = temp;
+				}
+				if (temp > max){
+					max = temp;
+				}
+				
+				repast::AgentId id = household->getId();
+				Average.push_back(std::make_pair(temp, id.id()));
+				//std::cout << "Agent: "<<Average[i].second << " Average Happiness: " << Average[i].first << std::endl;
+				i++;
+				local_agents_iter++;
 			}
-			if (temp > max){
-				max = temp;
+			std::vector<double> Normalised(context.size());
+			double mean=0;
+			for (int i = 0; i < context.size(); i++){
+				Normalised[i] = (2 * ((Average[i].first - min)/(max - min))) -1;
+				mean = Normalised[i] + mean;
+				//std::cout << "Agent: "<<Average[i].second << " Normalised: " << Normalised[i] << std::endl;
 			}
 			
-			repast::AgentId id = household->getId();
-			Average.push_back(std::make_pair(temp, id.id()));
-			//std::cout << "Agent: "<<Average[i].second << " Average Happiness: " << Average[i].first << std::endl;
-			i++;
-			local_agents_iter++;
-		}
-		std::vector<double> Normalised(context.size());
-		double mean=0;
-		for (int i = 0; i < context.size(); i++){
-			Normalised[i] = (2 * ((Average[i].first - min)/(max - min))) -1;
-			mean = Normalised[i] + mean;
-			//std::cout << "Agent: "<<Average[i].second << " Normalised: " << Normalised[i] << std::endl;
-		}
-		
-		mean = mean / Normalised.size();
+			mean = mean / Normalised.size();
 
-		//std::cout << "Mean Shift value =" << mean << std::endl;
-		repast::NormalGenerator popGen = repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(mean, param.migrationHappinessVariance));
-		double percentChange = popGen.next();
+			//std::cout << "Mean Shift value =" << mean << std::endl;
+			repast::NormalGenerator popGen = repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(mean, param.migrationHappinessVariance));
+			double percentChange = popGen.next();
 
-		std::cout << percentChange << std::endl;
+			//std::cout << percentChange << std::endl;
 
-		int migrationVal = percentChange * Normalised.size();
-		//std::cout<< "migrationVal = " << migrationVal << std::endl;
-		//calculateNewbiesFromMaize();
-		if (migrationVal > 0){
-			AddAgent(migrationVal);
-		
-		}else if (migrationVal < 0){
-			std::sort(Average.begin(),Average.end());
-			migrationVal =migrationVal * -1;
-			for (int i = 0; i < migrationVal; i++)
-			{
-		
+			int migrationVal = percentChange * Normalised.size();
+			//std::cout<< "migrationVal = " << migrationVal << std::endl;
+			//calculateNewbiesFromMaize();
+			if (migrationVal > 0){
+				AddAgent(migrationVal);
+			
+			}else if (migrationVal < 0){
+				std::sort(Average.begin(),Average.end());
+				migrationVal =migrationVal * -1;
+				for (int i = 0; i < migrationVal; i++)
+				{
+			
 
-				int rank = repast::RepastProcess::instance()->rank();
-				repast::AgentId id2(Average[i].second,rank,2);
-				//std::cout << "Agent " << Average[i].second << " with happiness " << Average[i].first << " Has been removed" << std::endl;
-				Household* household;
-				household = context.getAgent(id2);
-				removeHousehold(household);
+					int rank = repast::RepastProcess::instance()->rank();
+					repast::AgentId id2(Average[i].second,rank,2);
+					//std::cout << "Agent " << Average[i].second << " with happiness " << Average[i].first << " Has been removed" << std::endl;
+					Household* household;
+					household = context.getAgent(id2);
+					removeHousehold(household);
+				}
 			}
 		}
 		AddAgent(Newbies);
@@ -1275,51 +1278,46 @@ void AnasaziModel::migration(){
 
 double AnasaziModel::calculateNewbiesFromMaize()
 {
-	std::cout<< "b" << std::endl;
-	double NewbiesMean;
-	double landPotential = 0;
-	for(int i=1; i<boardSizeX; i++ )
-	{
-		for(int j=1; j<boardSizeY; j++)
+	if(Immigration){
+		double NewbiesMean;
+		double landPotential = 0;
+		for(int i=1; i<boardSizeX; i++ )
 		{
-			std::vector<Location*> locationList;
-			locationSpace->getObjectsAt(repast::Point<int>(i, j), locationList);
-			
-			if((locationList[0]->getState() == 0) || (locationList[0]->getState() == 2)){
-				if(locationList[0]->getExpectedYield()> param.householdNeed){
-				landPotential = locationList[0]->getExpectedYield() + landPotential;
-				//std::cout<<"landPotential" << landPotential <<std::endl;
+			for(int j=1; j<boardSizeY; j++)
+			{
+				std::vector<Location*> locationList;
+				locationSpace->getObjectsAt(repast::Point<int>(i, j), locationList);
+				
+				if((locationList[0]->getState() == 0) || (locationList[0]->getState() == 2)){
+					if(locationList[0]->getExpectedYield()> param.householdNeed){
+					landPotential = locationList[0]->getExpectedYield() + landPotential;
+					//std::cout<<"landPotential" << landPotential <<std::endl;
+					}
 				}
 			}
-
 		}
-	}
-	double excessMaze = landPotential - context.size()*param.householdNeed;
-	std::cout << "Excess Maze: " << excessMaze << std::endl;
-	std::cout<<"--------------------------------------"<<std::endl;
-	double supportedNewbies = excessMaze/ param.householdNeed;
-	if (supportedNewbies > param.excessMaizeThreshold){
-		std::cout << "supported Pop" << supportedNewbies << std::endl;
-		NewbiesMean = param.newbiesFactor * supportedNewbies;
-		std::cout << "NewbMean" << NewbiesMean <<std::endl;
-		NewbGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(NewbiesMean, param.immigrationVarience));
-		return NewbGen->next();
+		double excessMaze = landPotential - context.size()*param.householdNeed;
+
+		double supportedNewbies = excessMaze/ param.householdNeed;
+		if (supportedNewbies > param.excessMaizeThreshold){
+			NewbiesMean = param.newbiesFactor * supportedNewbies;
+			NewbGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(NewbiesMean, param.immigrationVarience));
+			return NewbGen->next();
+		}else{
+			return 0;
+		}
 	}else{
-		NewbiesMean = 0;
 		return 0;
 	}
 }
 
 void AnasaziModel::network(Household* Centre)
 {
-	std::cout<<"network"<<std::endl;
 	Neighbours.erase(Neighbours.begin(),Neighbours.end());
 	std::vector<Household*> currentNeighbours;
 	int influenceRadius = param.influenceRadius;
 	std::vector<int> agentLoc;
-	std::cout<<"break 1"<<std::endl;
 	repast::AgentId id_C = Centre->getId();
- 	std::cout<<"break 2"<<std::endl;
 	householdSpace->getLocation(id_C, agentLoc);
 	repast::Point<int> center(agentLoc);
 	repast::Moore2DGridQuery<Household> moore2DQuery(householdSpace);
@@ -1341,44 +1339,48 @@ void AnasaziModel::network(Household* Centre)
 }
 
 void AnasaziModel::updateBias(Household* household, std::unordered_set<int> currentNeighbours){ // issue that when biaas updates would effect 
-	
- 	repast::AgentId id_b = household->getId();
-	std::vector<int> agentLoc1;
-	householdSpace->getLocation(id_b,agentLoc1);
-	double Weightbias = 0;
-	double weightden =0; 
-	double Weight = 0;
-	Household* curNeighbour;
-	int rank = repast::RepastProcess::instance()->rank();
+	if(YieldPrediction){
+		repast::AgentId id_b = household->getId();
+		std::vector<int> agentLoc1;
+		householdSpace->getLocation(id_b,agentLoc1);
+		double Weightbias = 0;
+		double weightden =0; 
+		double Weight = 0;
+		Household* curNeighbour;
+		int rank = repast::RepastProcess::instance()->rank();
 
-	double X1 = agentLoc1[0];
-	double Y1 = agentLoc1[1];
-	for (auto N: currentNeighbours){
-		std::vector<int> agentLoc2;
+		double X1 = agentLoc1[0];
+		double Y1 = agentLoc1[1];
+		for (auto N: currentNeighbours){
+			std::vector<int> agentLoc2;
+			
+			repast::AgentId id2(N,rank,2);
+			householdSpace->getLocation(id2, agentLoc2);
+			double X2 = agentLoc2[0];
+			double Y2 = agentLoc2[1];
+
+			weightden = (sqrt(pow((X1-X2),2)+pow((Y1-Y2),2))) + weightden;
 		
-		repast::AgentId id2(N,rank,2);
-		householdSpace->getLocation(id2, agentLoc2);
-		double X2 = agentLoc2[0];
-		double Y2 = agentLoc2[1];
+		}
+		// std::cout << "Household " << id << " at X " << agentLoc1[0] << " Y " << agentLoc1[1] << std::endl;
+		for (auto N: currentNeighbours){
+			std::vector<int> agentLoc2;
 
-		weightden = (sqrt(pow((X1-X2),2)+pow((Y1-Y2),2))) + weightden;
+			repast::AgentId id3(N,rank,2);
+			householdSpace->getLocation(id3, agentLoc2);
+			double X2 = agentLoc2[0];
+			double Y2 = agentLoc2[1];
+			//std::cout << "Neighbour " << id2 << " at X " << agentLoc2[0] << " Y " << agentLoc2[1] << std::endl;
+			Weight = 1 - ((sqrt(pow((X1-X2),2)+pow((Y1-Y2),2)))/weightden);
+			// std::cout <<"Weight: "<< Weight << std::endl;
+			curNeighbour = context.getAgent(id3);
+			// std::cout << "Neighbour id: " << curNeighbour->getId() << " Bias :" << curNeighbour->getBias() << std::endl;
+			Weightbias = (Weight * (curNeighbour->getBias() - household->getBias())) + Weightbias;
+		}
+		household->setBias(Weightbias);
+	}else{
+		household->setBias(0);
 	}
-	// std::cout << "Household " << id << " at X " << agentLoc1[0] << " Y " << agentLoc1[1] << std::endl;
-	for (auto N: currentNeighbours){
-		std::vector<int> agentLoc2;
-
-		repast::AgentId id3(N,rank,2);
-		householdSpace->getLocation(id3, agentLoc2);
-		double X2 = agentLoc2[0];
-		double Y2 = agentLoc2[1];
-		//std::cout << "Neighbour " << id2 << " at X " << agentLoc2[0] << " Y " << agentLoc2[1] << std::endl;
-		Weight = 1 - ((sqrt(pow((X1-X2),2)+pow((Y1-Y2),2)))/weightden);
-		// std::cout <<"Weight: "<< Weight << std::endl;
-		curNeighbour = context.getAgent(id3);
-		// std::cout << "Neighbour id: " << curNeighbour->getId() << " Bias :" << curNeighbour->getBias() << std::endl;
-		Weightbias = (Weight * (curNeighbour->getBias() - household->getBias())) + Weightbias;
-	}
-	household->setBias(Weightbias);
 }
 
 void AnasaziModel::AddAgent(double NotoAdd){
@@ -1410,7 +1412,7 @@ void AnasaziModel::AddAgent(double NotoAdd){
 		}
 
 		if(fieldSearch(newAgent)){
-		std::cout << "New Agent "<< houseID << " created" << std::endl;
+		//std::cout << "New Agent "<< houseID << " created" << std::endl;
 		network(newAgent);
 		newAgent->initVariables(Neighbours, param.biasMu, 180*happinessGen->next(), biasGen->next(), param.deltaNeighboursWeight, param.expectationsWeight, param.fissionsWeight, param.deathWeight);
 		updateBias(newAgent,Neighbours);
