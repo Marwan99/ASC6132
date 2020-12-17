@@ -317,10 +317,12 @@ void AnasaziModel::initAgents()
 		{	
 			double initBias = biasGen->next();
 			local_agents_iter++;
-			fieldSearch(household);
-			network(household);
-			household->initVariables(Neighbours, param.biasMu, (180*happinessGen->next()), initBias, param.deltaNeighboursWeight, param.expectationsWeight, param.fissionsWeight, param.deathWeight);
-			updateBias(household,Neighbours);
+			if (fieldSearch(household)){
+				network(household);
+				household->initVariables(Neighbours, param.biasMu, (180*happinessGen->next()), initBias, param.deltaNeighboursWeight, param.expectationsWeight, param.fissionsWeight, param.deathWeight);
+				updateBias(household,Neighbours);
+			}
+
 		}
 	}
 }
@@ -331,7 +333,9 @@ void AnasaziModel::doPerTick()
 	updateLocationProperties();
 	writeOutputToFile();
 	year++;
+	
 	updateHouseholdProperties();
+	
 	migration();
 }
 
@@ -744,6 +748,7 @@ void AnasaziModel::updateHouseholdProperties()
 	}
 	//std::cout << "----------------" << std::endl;
 	local_agents_iter = context.begin();
+	local_agents_end = context.end();
 	while(local_agents_iter != local_agents_end){ // add as method in household class 
 		Household* household = (&**local_agents_iter);
 		// std::vector<int> loc;
@@ -1298,8 +1303,10 @@ void AnasaziModel::migration(){
 	
 	
 	if (param.Migrationyear == yearsSince){
+		std::cout << "break 1" << std::endl;
 		double Newbies = calculateNewbiesFromMaize();
-		if(Happiness){
+		if((Happiness) && (context.size()>0)){
+		
 			repast::SharedContext<Household>::const_iterator local_agents_iter = context.begin();
 			repast::SharedContext<Household>::const_iterator local_agents_end = context.end();
 			double min = 200;
@@ -1319,6 +1326,7 @@ void AnasaziModel::migration(){
 				}
 				
 				repast::AgentId id = household->getId();
+		
 				Average.push_back(std::make_pair(temp, id.id()));
 				//std::cout << "Agent: "<<Average[i].second << " Average Happiness: " << Average[i].first << std::endl;
 				i++;
@@ -1331,9 +1339,9 @@ void AnasaziModel::migration(){
 				mean = Normalised[i] + mean;
 				//std::cout << "Agent: "<<Average[i].second << " Normalised: " << Normalised[i] << std::endl;
 			}
-			
+			std::cout << "break 1" << std::endl;
 			mean = mean / Normalised.size();
-
+			std::cout << "break 2" << std::endl;
 			//std::cout << "Mean Shift value =" << mean << std::endl;
 			repast::NormalGenerator popGen = repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(mean, param.migrationHappinessVariance));
 			double percentChange = popGen.next();
@@ -1341,6 +1349,7 @@ void AnasaziModel::migration(){
 			//std::cout << percentChange << std::endl;
 
 			int migrationVal = percentChange * Normalised.size();
+			std::cout << "break 3" << std::endl;
 			//std::cout<< "migrationVal = " << migrationVal << std::endl;
 			//calculateNewbiesFromMaize();
 			if (migrationVal > 0){
@@ -1349,10 +1358,12 @@ void AnasaziModel::migration(){
 			}else if (migrationVal < 0){
 				std::sort(Average.begin(),Average.end());
 				migrationVal =migrationVal * -1;
+				if (migrationVal > context.size()){
+					migrationVal = context.size();
+				}
+				
 				for (int i = 0; i < migrationVal; i++)
 				{
-			
-
 					int rank = repast::RepastProcess::instance()->rank();
 					repast::AgentId id2(Average[i].second,rank,2);
 					//std::cout << "Agent " << Average[i].second << " with happiness " << Average[i].first << " Has been removed" << std::endl;
@@ -1360,6 +1371,7 @@ void AnasaziModel::migration(){
 					household = context.getAgent(id2);
 					removeHousehold(household);
 				}
+				std::cout << "break 4" << std::endl;
 			}
 		}
 		AddAgent(Newbies);
