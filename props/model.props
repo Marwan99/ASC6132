@@ -7,7 +7,7 @@ proc.per.y = 1
 grid.buffer = 0
 
 start.year = 800
-end.year = 952
+end.year = 1350
 max.store.year = 2
 max.storage = 1600
 household.need = 800
@@ -24,14 +24,14 @@ fertility.prop = 0.11489
 harvest.adj = 0.97621
 new.household.ini.maize = 0.33000
 
-bias.Mu = 0.1 # constant
+bias.Mu = 0.05 # constant
 bias.Variance = 0.30000 # constant
 Influence.Radius = 10   # 5-20
 excess.Maize.Threshold = 150 # 90-200
 newbies.factor = 0.2 # 0.5-0.1
 Immigration.variance = 1 # 10 - 30
-delta.neighbours.weight = 1 # 0.5-10
-expectations.weight = 0.01 # 0.005-0.05
+delta.neighbours.weight = 4 # 0.5-10
+expectations.weight = 0.0 # 0.005-0.05
 fission.weight = 1 #1- 10
 death.weight = 1 #1 - 10
 migration.happiness.variance = 0.3 # constant 
