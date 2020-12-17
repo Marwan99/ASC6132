@@ -21,6 +21,9 @@ def model(parameters):
     int_params.append(int(parameters.max_distance))
     int_params.append(int(parameters.initial_min))
     int_params.append(int(parameters.initial_max))
+    int_params.append(int(parameters.migration_year))
+    int_params.append(int(parameters.influence_radius))
+    int_params.append(int(parameters.excess_maize))
     # print(int_params)
 
     double_params.append(0.10000)
@@ -28,6 +31,16 @@ def model(parameters):
     double_params.append(0.11489)
     double_params.append(0.97621)
     double_params.append(0.33000)
+
+    double_params.append(parameters.bias_var)
+    double_params.append(parameters.newbies_factor)
+    double_params.append(parameters.bias_mu)
+    double_params.append(parameters.immigration_var)
+    double_params.append(parameters.delta_neighbours)
+    double_params.append(parameters.expectations_weight)
+    double_params.append(parameters.fission_weight)
+    double_params.append(parameters.death_weight)
+    double_params.append(parameters.migration_happiness_var)
 #     print(double_params)
     
     ret  = anasazi_model(551, int_params, double_params).tolist()
@@ -59,7 +72,21 @@ parameter_priors = pyabc.Distribution(
     max_death = pyabc.RV("uniform", 35, 3),
     max_distance = pyabc.RV("uniform", 900, 200),
     initial_min = pyabc.RV("uniform", 800, 400),
-    initial_max = pyabc.RV("uniform", 1400, 200))
+    initial_max = pyabc.RV("uniform", 1400, 200),
+    
+    migration_year = pyabc.RV("uniform", 10, 50),
+    influence_radius = pyabc.RV("uniform", 5, 15),
+    excess_maize = pyabc.RV("uniform", 90, 110),
+    
+    bias_var = pyabc.RV("uniform", 0.3, 0.01),
+    newbies_factor = pyabc.RV("uniform", 0.1, 0.4),
+    bias_mu = pyabc.RV("uniform", 0.1, 0.01),
+    immigration_var = pyabc.RV("uniform", 1, 20),
+    delta_neighbours = pyabc.RV("uniform", 0.5, 10),
+    expectations_weight = pyabc.RV("uniform", 0.005, 0.5),
+    fission_weight = pyabc.RV("uniform", 1, 0.01),
+    death_weight = pyabc.RV("uniform", 1, 0.01),
+    migration_happiness_var = pyabc.RV("uniform", 0.3, 0.01))
     # annual_variance = pyabc.RV("uniform", 0, 0.5),
     # spatial_variance = pyabc.RV("uniform", 0, 0.5),
     # fertility_prop = pyabc.RV("uniform", 0, 0.5),
