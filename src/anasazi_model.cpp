@@ -37,7 +37,7 @@ void anasazi_model(int* result, unsigned int k, int * int_params, unsigned int i
 	delete model;
 	repast::RepastProcess::instance()->done();
 
-	// std::cout << "cpp simulation complete\n";
+	std::cout << "cpp simulation complete\n";
 }
 
 int main(int argc, char** argv){

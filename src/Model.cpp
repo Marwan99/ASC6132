@@ -87,12 +87,30 @@ AnasaziModel::AnasaziModel(int* int_params, double* double_params, boost::mpi::c
 	param.maxDistance = int_params[7];
 	param.initMinCorn = int_params[8];
 	param.initMaxCorn = int_params[9];
+	
+	// new int parameters
+	param.Migrationyear = int_params[10];
+    param.influenceRadius = int_params[11];
+    param.excessMaizeThreshold = int_params[12];
+	// end of new int parameters
 
 	param.annualVariance = double_params[0];
 	param.spatialVariance = double_params[1];
 	param.fertilityProbability = double_params[2];
 	param.harvestAdjustment = double_params[3];
 	param.maizeStorageRatio = double_params[4];
+
+	// new double parameters
+	param.biasVariance = double_params[5];
+	param.newbiesFactor = double_params[6];
+	param.biasMu = double_params[7];
+    param.immigrationVarience = double_params[8];
+    param.deltaNeighboursWeight = double_params[9];
+    param.expectationsWeight = double_params[10];
+    param.fissionsWeight = double_params[11];
+    param.deathWeight = double_params[12];
+    param.migrationHappinessVariance = double_params[13];
+	// end of new double parameters
 
 	year = param.startYear;
 	stopAt = param.endYear - param.startYear + 1;
@@ -102,6 +120,18 @@ AnasaziModel::AnasaziModel(int* int_params, double* double_params, boost::mpi::c
 	soilGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(0,param.spatialVariance));
 	initAgeGen = new repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(0,param.minDeathAge));
 	initMaizeGen = new repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(param.initMinCorn,param.initMaxCorn));
+
+	Immigration = true;
+	YieldPrediction = true;
+	Happiness = true;
+
+	if (YieldPrediction){
+		biasGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(1, param.biasVariance));
+	}else{
+		biasGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(1, 0));
+	}
+	
+	happinessGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(0, param.biasVariance));
 
 	string resultFile = "NumberOfHousehold.csv";
 	// out.open(resultFile);
