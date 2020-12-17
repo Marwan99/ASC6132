@@ -1,4 +1,5 @@
 calibration-env/*
+calib-env/*
 .vscode/*
 bin/*
 *.pyc
