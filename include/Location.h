@@ -44,7 +44,7 @@ private:
 	std::vector<WaterSource> waterSources;
 
 	//int presentHarvest;
-	int expectedHarvest;
+	double expectedHarvest;
 	double soilQuality;
 
 
@@ -61,7 +61,7 @@ public:
 	virtual const repast::AgentId& getId() const { return LocationID; }
 	int getZone(){return zone; }
 	int getMaizeZone(){return maizeZone; }
-	int getExpectedYield();
+	double getExpectedYield();
 	bool getWater(){return isWater; }
 	int getState(){return state; }
 

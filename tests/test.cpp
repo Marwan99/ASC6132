@@ -13,13 +13,14 @@ void test1(int argc, char** argv, std::ofstream* output_file)
     std::string configFile = argv[1]; // The name of the configuration file
     std::string propsFile  = argv[2]; // The name of the properties file
     boost::mpi::communicator* world;
+    bool Selector[3] = {0,0,0};
 
 
     repast::RepastProcess::init(configFile);
     world = new boost::mpi::communicator; // confirm if this is needed
 
     /* Test body ------------------------------------------------------*/
-    AnasaziModel* testModel = new AnasaziModel(propsFile, argc, argv, world);
+    AnasaziModel* testModel = new AnasaziModel(Selector, propsFile, argc, argv, world);
     testModel->initAgents();
     testModel->testInitAgent(output_file);
 
@@ -35,6 +36,7 @@ void test2(int argc, char** argv, std::ofstream* output_file)
     customPrint logger(output_file);
     std::string configFile = argv[1]; // The name of the configuration file
     std::string propsFile  = argv[2]; // The name of the properties file
+    bool Selector[3] = {0,0,0};
     // boost::mpi::environment env(argc, argv, file);
     boost::mpi::communicator* world;
 
@@ -49,7 +51,7 @@ void test2(int argc, char** argv, std::ofstream* output_file)
     logger.print("Expected hydro level for zone " + std::to_string(zone) + " in year 800 is: " + std::to_string(expectedResult));
 
     // AnasaziModel* testModel = createTestModel();
-    AnasaziModel* testModel = new AnasaziModel(propsFile, argc, argv, world);
+    AnasaziModel* testModel = new AnasaziModel(Selector, propsFile, argc, argv, world);
 
     testModel->readCsvHydro();
     double testResult = testModel->hydroLevel(zone);
@@ -79,6 +81,7 @@ void test3(int argc, char** argv, std::ofstream* output_file)
     std::string configFile = argv[1]; // The name of the configuration file
     std::string propsFile  = argv[2]; // The name of the properties file
     boost::mpi::communicator* world;
+    bool Selector[3] = {0,0,0};
 
     repast::RepastProcess::init(configFile);
     world = new boost::mpi::communicator; // confirm if this is needed
@@ -86,7 +89,7 @@ void test3(int argc, char** argv, std::ofstream* output_file)
     int age = 30;
 
     /* Test body ------------------------------------------------------*/
-    AnasaziModel* testModel = new AnasaziModel(propsFile, argc, argv, world);
+    AnasaziModel* testModel = new AnasaziModel(Selector, propsFile, argc, argv, world);
     testModel->initAgents();
     testModel->testDeathAge(age, output_file);
 
@@ -98,6 +101,7 @@ void test3(int argc, char** argv, std::ofstream* output_file)
 void test4(int argc, char** argv, std::ofstream* output_file){
     std::string configFile = argv[1]; // The name of the configuration file
     std::string propsFile  = argv[2]; // The name of the properties file
+    bool Selector[3] = {0,0,0};
 
     boost::mpi::environment env(argc, argv);
     boost::mpi::communicator* world;
@@ -105,7 +109,7 @@ void test4(int argc, char** argv, std::ofstream* output_file){
     repast::RepastProcess::init(configFile);
     world = new boost::mpi::communicator;
 
-    AnasaziModel* model = new AnasaziModel(propsFile, argc, argv, world);
+    AnasaziModel* model = new AnasaziModel(Selector, propsFile, argc, argv, world);
     repast::ScheduleRunner& runner = repast::RepastProcess::instance()->getScheduleRunner();
 
     model->initAgents();
@@ -119,6 +123,7 @@ void test5(int argc, char** argv, std::ofstream* output_file)
 {
     std::string configFile = argv[1]; // The name of the configuration file
     std::string propsFile  = argv[2]; // The name of the properties file
+    bool Selector[3] = {0,0,0};
 
     boost::mpi::environment env(argc, argv);
     boost::mpi::communicator* world;
@@ -126,7 +131,7 @@ void test5(int argc, char** argv, std::ofstream* output_file)
     repast::RepastProcess::init(configFile);
     world = new boost::mpi::communicator;
 
-    AnasaziModel* model = new AnasaziModel(propsFile, argc, argv, world);
+    AnasaziModel* model = new AnasaziModel(Selector, propsFile, argc, argv, world);
     repast::ScheduleRunner& runner = repast::RepastProcess::instance()->getScheduleRunner();
 
     model->initAgents();
@@ -144,12 +149,13 @@ void test6(int argc, char** argv, std::ofstream* output_file)
 	std::string propsFile  = argv[2]; // The name of the properties file
 	// boost::mpi::environment env(argc, argv, file);
 	boost::mpi::communicator* world;
+    bool Selector[3] = {0,0,0};
 
 	repast::RepastProcess::init(configFile);
 	world = new boost::mpi::communicator; // confirm if this is needed
 
 	/* Test body ------------------------------------------------------*/
-	AnasaziModel* model = new AnasaziModel(propsFile, argc, argv, world);
+	AnasaziModel* model = new AnasaziModel(Selector, propsFile, argc, argv, world);
 	model->initAgents();
 	model->testRelocateHousehold(output_file);
 
@@ -159,7 +165,6 @@ void test6(int argc, char** argv, std::ofstream* output_file)
 }
 
 int main(int argc, char** argv){
-
     std::ofstream *file = (new std::ofstream);
     file->open("test_log.txt");
 

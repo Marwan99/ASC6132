@@ -9,18 +9,26 @@
 #include "repast_hpc/GridComponents.h"
 #include "repast_hpc/Random.h"
 #include <math.h>
+#include <unordered_set>
 
 #include "Household.h"
+
 
 #define NUMBER_OF_YEARS 551
 
 class AnasaziModel{
 private:
 	int year;
+	int yearsSince = 0;
 	int stopAt;
 	int boardSizeX, boardSizeY, procX, procY, bufferSize;
 	int randomSeed;
 	int houseID = 0;
+	std::unordered_set<int> Neighbours;
+	std::queue<int> maizeExcessHistory;
+	bool Immigration;
+	bool YieldPrediction;
+	bool Happiness;
 
 	std::ofstream out;
 	std::string data_dir; // path to the data directory
@@ -44,6 +52,20 @@ private:
 		double fertilityProbability;
 		double harvestAdjustment;
 		double maizeStorageRatio;
+
+		double biasMu;
+        double biasVariance;
+        int influenceRadius;
+        int excessMaizeThreshold;
+        double newbiesFactor;
+        double immigrationVarience;
+        double deltaNeighboursWeight;
+        double expectationsWeight;
+        double fissionsWeight;
+        double deathWeight;
+        double migrationHappinessVariance;
+		int Migrationyear;
+		
 	} param;
 
 	struct PDSI
@@ -87,12 +109,15 @@ private:
 	repast::NormalGenerator* soilGen;// = repast::Random::instance()->createNormalGenerator(0,sqrt(0.1));
 	repast::IntUniformGenerator* initAgeGen;// = repast::Random::instance()->createUniIntGenerator(0,29);
 	repast::IntUniformGenerator* initMaizeGen;// = repast::Random::instance()->createUniIntGenerator(1000,1600);
+	repast::NormalGenerator* NewbGen;
 
+	repast::NormalGenerator* biasGen;// = repast::Random::instance()->createNormalGenerator(1,sqrt(0.4);
+	repast::NormalGenerator* happinessGen;
 
 public:
 	int population[NUMBER_OF_YEARS];
 
-	AnasaziModel(std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm);
+	AnasaziModel(bool* Selector, std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm);
 	AnasaziModel(int* int_params, double* double_params, boost::mpi::communicator* comm, std::string data_dir);
 	// ~AnasaziModel();
 	void initAgents();
@@ -111,7 +136,12 @@ public:
 	bool fieldSearch(Household* household);
 	void removeHousehold(Household* household);
 	bool relocateHousehold(Household* household);
-
+	void migration();
+	double calculateNewbiesFromMaize();
+	void network(Household* Centre);
+	void updateBias(Household* household, std::unordered_set<int> currentNeighbours);
+	void AddAgent(double NotoAdd);
+	
 	// Test 3 methods
 	void testDeathAge(int deathAge, std::ofstream* log_file);
 
@@ -127,6 +157,8 @@ public:
 
 	// Test 4 method
 	void testOutputFile(std::ofstream* log_file);
+
+
 };
 
 #endif
