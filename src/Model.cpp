@@ -134,13 +134,14 @@ AnasaziModel::AnasaziModel(int* int_params, double* double_params, boost::mpi::c
 	happinessGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(0, param.biasVariance));
 
 	string resultFile = "NumberOfHousehold.csv";
-	// out.open(resultFile);
-	// out << "Year,Number-of-Households" << endl;
+	out.open(resultFile);
+	out << "Year,Number-of-Households" << endl;
 }
 
 
 AnasaziModel::AnasaziModel(bool* Selector, std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm): context(comm) , locationContext(comm)
 {
+	data_dir = "/home/jaguar/agent_based_modelling/ASC6132/data/";
 	props = new repast::Properties(propsFile, argc, argv, comm);
 	boardSizeX = repast::strToInt(props->getProperty("board.size.x"));
 	boardSizeY = repast::strToInt(props->getProperty("board.size.y"));
@@ -222,8 +223,8 @@ AnasaziModel::AnasaziModel(bool* Selector, std::string propsFile, int argc, char
 	
 
 	string resultFile = props->getProperty("result.file");
-	// out.open(resultFile);
-	// out << "Year,Number-of-Households" << endl;
+	out.open(resultFile);
+	out << "Year,Number-of-Households" << endl;
 }
 
 // AnasaziModel::~AnasaziModel()
@@ -326,7 +327,7 @@ void AnasaziModel::initAgents()
 
 void AnasaziModel::doPerTick()
 {
-	// std::cout << ".";
+	std::cout << ".";
 	updateLocationProperties();
 	writeOutputToFile();
 	year++;
@@ -666,7 +667,7 @@ void AnasaziModel::checkWaterConditions()
 void AnasaziModel::writeOutputToFile()
 {
 	population[year-param.startYear] = context.size();
-	// out << year << "," <<  context.size() << std::endl;
+	out << year << "," <<  context.size() << std::endl;
 }
 
 void  AnasaziModel::updateLocationProperties()
