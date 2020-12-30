@@ -77,4 +77,4 @@ db_path = ("sqlite:///" +
            os.path.join(tempfile.gettempdir(), "test.db"))
 history = abc.new(db_path, observed_data)
 
-history = abc.run(minimum_epsilon=50, max_nr_populations=10)
+history = abc.run(minimum_epsilon=30, max_nr_populations=8)
