@@ -6,7 +6,7 @@ CC=g++
 CPPFLAGS=-fPIC
 INCLUDEPATH=$(shell python3-config --includes)
 INCLUDEPATHNUMPY=$(shell python3 -c 'import numpy as np; print(np.get_include())')
-PYTHONLINKERSETTINGS=$(shell python3-config --ldflags | cut -d" " -f 1)
+PYTHONLINKERSETTINGS=$(shell python3-config --ldflags)# | cut -d" " -f 1)
 PYTHONLIBS=$(shell python3-config --libs)
 
 MPICXX=$(HOME)/sfw/MPICH/bin/mpicxx -std=c++11 -w

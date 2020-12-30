@@ -12,13 +12,15 @@ void anasazi_model(int* result, unsigned int k, int * int_params, unsigned int i
 		
 	// char *argv_mock[3] = {"lol", config_file, parameters_file};
 	// int lol =3;
-	// boost::mpi::environment env;
+	boost::mpi::environment* env;
+	env = new boost::mpi::environment; // env;
+	// std::cout << "MPI didnt break" << std::endl;
 	boost::mpi::communicator* world;
-	world = new boost::mpi::communicator;
-	std::cout << "world created... rank " << world->rank() << " of " << world->size() << std::endl;
-
 	repast::RepastProcess::init("../props/config.props");
 	// std::cout << "Repast initialised\n";
+	world = new boost::mpi::communicator;
+	// std::cout << "world created... rank " << world->rank() << " of " << world->size() << std::endl;
+
 
 	AnasaziModel* model = new AnasaziModel(int_params, double_params, world, "../data/");
 	repast::ScheduleRunner& runner = repast::RepastProcess::instance()->getScheduleRunner();
@@ -37,6 +39,7 @@ void anasazi_model(int* result, unsigned int k, int * int_params, unsigned int i
 	delete model;
 	repast::RepastProcess::instance()->done();
 
+	// env.finalized();
 	std::cout << "cpp simulation complete\n";
 }
 

@@ -76,7 +76,7 @@ AnasaziModel::AnasaziModel(int* int_params, double* double_params, boost::mpi::c
 	locationContext.addProjection(locationSpace);
 
 	param.startYear = 800;
-	param.endYear = 1350;
+	param.endYear = 850;
 	param.maxStorageYear = int_params[0];
 	param.maxStorage = int_params[1];
 	param.householdNeed = int_params[2];
@@ -141,7 +141,7 @@ AnasaziModel::AnasaziModel(int* int_params, double* double_params, boost::mpi::c
 
 AnasaziModel::AnasaziModel(bool* Selector, std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm): context(comm) , locationContext(comm)
 {
-	data_dir = "/home/jaguar/agent_based_modelling/ASC6132/data/";
+	data_dir = "data/";
 	props = new repast::Properties(propsFile, argc, argv, comm);
 	boardSizeX = repast::strToInt(props->getProperty("board.size.x"));
 	boardSizeY = repast::strToInt(props->getProperty("board.size.y"));
@@ -329,7 +329,7 @@ void AnasaziModel::initAgents()
 
 void AnasaziModel::doPerTick()
 {
-	std::cout << ".";
+	// std::cout << year << ".";
 	updateLocationProperties();
 	writeOutputToFile();
 	year++;
@@ -1301,8 +1301,8 @@ void AnasaziModel::migration(){
 	
 	double Newbies = calculateNewbiesFromMaize();
 	if (param.Migrationyear == yearsSince){
-		//std::cout << "break 1" << std::endl;
-		
+		// std::cout << "break 1" << std::endl;
+		// std::cout << context.size() << std::endl;
 		if((Happiness) && (context.size()>0)){
 		
 			repast::SharedContext<Household>::const_iterator local_agents_iter = context.begin();
@@ -1351,8 +1351,10 @@ void AnasaziModel::migration(){
 			//std::cout<< "migrationVal = " << migrationVal << std::endl;
 			//calculateNewbiesFromMaize();
 			if (migrationVal > 0){
+				// std::cout << "adding agent" << std::endl;
 				AddAgent(migrationVal);
-			
+				// std::cout << "added agent" << std::endl;
+
 			}else if (migrationVal < 0){
 				std::sort(Average.begin(),Average.end());
 				migrationVal =migrationVal * -1;
@@ -1372,7 +1374,7 @@ void AnasaziModel::migration(){
 				//std::cout << "break 4" << std::endl;
 			}
 		}
-		std::cout << "Adding " << Newbies << "newbies"<< std::endl;
+		// std::cout << "Adding " << Newbies << "newbies"<< std::endl;
 		AddAgent(Newbies);
 		yearsSince = 0;
 	}else{
@@ -1408,8 +1410,8 @@ double AnasaziModel::calculateNewbiesFromMaize()
 		double supportedNewbies = excessMaze/ param.householdNeed;
 		//supportedFields = supportedFields - context.size();
 		//std::cout << "Supported Newbies"<< supportedNewbies << std::endl;
-		std::cout << "Supported Fields"<< supportedFields <<std::endl;
-		std::cout << "Number of Agents"<<context.size() << std::endl;
+		// std::cout << "Supported Fields"<< supportedFields <<std::endl;
+		// std::cout << "Number of Agents"<<context.size() << std::endl;
 		if (supportedFields > param.excessMaizeThreshold){
 			NewbiesMean = param.newbiesFactor * supportedFields;
 			NewbGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(NewbiesMean, param.immigrationVarience));
