@@ -26,9 +26,9 @@ private:
 	int houseID = 0;
 	std::unordered_set<int> Neighbours;
 	std::queue<int> maizeExcessHistory;
-	bool Immigration;
-	bool YieldPrediction;
-	bool Happiness;
+	bool Immigration = 1;
+	bool YieldPrediction = 1;
+	bool Happiness = 1;
 
 	std::ofstream out;
 

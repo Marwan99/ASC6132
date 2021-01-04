@@ -120,8 +120,8 @@ AnasaziModel::AnasaziModel(bool* Selector, std::string propsFile, int argc, char
 	initMaizeGen = new repast::IntUniformGenerator(repast::Random::instance()->createUniIntGenerator(param.initMinCorn,param.initMaxCorn));
 
 	Immigration = Selector[0];
-	YieldPrediction = Selector[2];
-	Happiness = Selector[3];
+	YieldPrediction = Selector[1];
+	Happiness = Selector[2];
 
 	if (YieldPrediction){
 		biasGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(1, param.biasVariance));
