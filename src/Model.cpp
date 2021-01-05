@@ -76,7 +76,7 @@ AnasaziModel::AnasaziModel(int* int_params, double* double_params, boost::mpi::c
 	locationContext.addProjection(locationSpace);
 
 	param.startYear = 800;
-	param.endYear = 850;
+	param.endYear = 1350;
 	param.maxStorageYear = int_params[0];
 	param.maxStorage = int_params[1];
 	param.householdNeed = int_params[2];
@@ -133,9 +133,9 @@ AnasaziModel::AnasaziModel(int* int_params, double* double_params, boost::mpi::c
 	
 	happinessGen = new repast::NormalGenerator(repast::Random::instance()->createNormalGenerator(0, param.biasVariance));
 
-	string resultFile = "NumberOfHousehold.csv";
-	out.open(resultFile);
-	out << "Year,Number-of-Households" << endl;
+	// string resultFile = "NumberOfHousehold.csv";
+	// out.open(resultFile);
+	// out << "Year,Number-of-Households" << endl;
 }
 
 

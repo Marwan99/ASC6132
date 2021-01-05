@@ -3,6 +3,7 @@ import csv
 import pyabc
 import tempfile
 import numpy as np
+from datetime import datetime
 from mpi4py import MPI
 from anasazi_cpp.anasazi_model import anasazi_model
 
@@ -93,15 +94,30 @@ parameter_priors = pyabc.Distribution(
     # harvest_adj = pyabc.RV("uniform", 0, 0.5),
     # new_household = pyabc.RV("uniform", 0, 0.5))
 
-MPI.COMM_WORLD
+# MPI.COMM_WORLD
 
 abc = pyabc.inference.ABCSMC(model, parameter_priors,distance,
     population_size=15,
     # sampler=pyabc.sampler.SingleCoreSampler(check_max_eval=True))
     sampler=pyabc.sampler.MulticoreEvalParallelSampler(check_max_eval=True))
 
-db_path = ("sqlite:///" +
-           os.path.join(tempfile.gettempdir(), "test.db"))
+# db_path = ("sqlite:///" +
+#            os.path.join(tempfile.gettempdir(), "test.db"))
+
+# now = datetime.now()
+dt_string = datetime.now().strftime("%d%m%y_%H-%M-%S")
+db_path = ("sqlite:///" + "calib_data/" + dt_string + ".db")
+
 history = abc.new(db_path, observed_data)
 
-history = abc.run(minimum_epsilon=50, max_nr_populations=3)
+history = abc.run(minimum_epsilon=50, max_nr_populations=10)
+
+posteriors = history.get_distribution()
+
+print(posteriors[0])
+# print(posteriors[1])
+
+print("\nFinal values are:\n")
+
+for i in range(posteriors[0].shape[1]):
+    print(posteriors[0].columns[i], "=", posteriors[0].values[0][i])
