@@ -237,19 +237,23 @@ void AnasaziModel::initAgents()
 
 void AnasaziModel::doPerTick()
 {
-	updateLocationProperties();
-	writeOutputToFile();
-	year++;
-	
-	updateHouseholdProperties();
-	
-	migration();
+	if (context.size() < 250){
+		updateLocationProperties();
+		writeOutputToFile();
+		year++;
+		updateHouseholdProperties();
+		migration();
+	}else{
+		writeOutputToFile();
+		year++;
+	}
 }
 
 void AnasaziModel::initSchedule(repast::ScheduleRunner& runner)
 {
 	runner.scheduleEvent(1, 1, repast::Schedule::FunctorPtr(new repast::MethodFunctor<AnasaziModel> (this, &AnasaziModel::doPerTick)));
 	runner.scheduleStop(stopAt);
+
 }
 
 void AnasaziModel::readCsvMap()
@@ -577,7 +581,12 @@ void AnasaziModel::checkWaterConditions()
 
 void AnasaziModel::writeOutputToFile()
 {
-	out << year << "," <<  context.size() << std::endl;
+	if (context.size() >= 250){
+		out << year << "," <<  0 << std::endl;	
+	}else{
+		out << year << "," <<  context.size() << std::endl;	
+	}
+	
 }
 
 void  AnasaziModel::updateLocationProperties()
