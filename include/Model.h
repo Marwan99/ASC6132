@@ -23,6 +23,7 @@ private:
 	int houseID = 0;
 
 	std::ofstream out;
+	std::string data_dir; // path to the data directory
 
 	struct Parameters
 	{
@@ -89,8 +90,11 @@ private:
 
 
 public:
+	int population[NUMBER_OF_YEARS];
+
 	AnasaziModel(std::string propsFile, int argc, char** argv, boost::mpi::communicator* comm);
-	~AnasaziModel();
+	AnasaziModel(int* int_params, double* double_params, boost::mpi::communicator* comm, std::string data_dir);
+	// ~AnasaziModel();
 	void initAgents();
 	void initSchedule(repast::ScheduleRunner& runner);
 	void doPerTick();
