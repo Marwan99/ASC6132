@@ -4,6 +4,7 @@ import pyabc
 import tempfile
 import numpy as np
 from mpi4py import MPI
+import datetime
 from anasazi_cpp.anasazi_model import anasazi_model
 
 
@@ -11,16 +12,40 @@ def model(parameters):
     int_params = []
     double_params = []
 
-    int_params.append(int(parameters.max_store_year))
-    int_params.append(int(parameters.max_storage))
-    int_params.append(int(parameters.household_need))
-    int_params.append(int(parameters.min_fission))
-    int_params.append(int(parameters.max_fission))
-    int_params.append(int(parameters.min_death))
-    int_params.append(int(parameters.max_death))
-    int_params.append(int(parameters.max_distance))
-    int_params.append(int(parameters.initial_min))
-    int_params.append(int(parameters.initial_max))
+    # if(int(parameters.min_fission) > int(parameters.max_fission)):
+    #     return [0]*551
+    
+    # if(int(parameters.min_death) > int(parameters.max_death)):
+    #     return [0]*551
+    
+    # if(int(parameters.initial_min) > int(parameters.initial_max)):
+    #     return [0]*551
+
+    # if(int(parameters.min_fission) > int(parameters.max_fission)):
+    #     return [0]*551
+    
+    # int_params.append(int(parameters.max_store_year))
+    # int_params.append(int(parameters.max_storage))
+    # int_params.append(int(parameters.household_need))
+    # int_params.append(int(parameters.min_fission))
+    # int_params.append(int(parameters.max_fission))
+    # int_params.append(int(parameters.min_death))
+    # int_params.append(int(parameters.max_death))
+    # int_params.append(int(parameters.max_distance))
+    # int_params.append(int(parameters.initial_min))
+    # int_params.append(int(parameters.initial_max))
+
+    int_params.append(1)
+    int_params.append(1406)
+    int_params.append(800)
+    int_params.append(17)
+    int_params.append(27)
+    int_params.append(25)
+    int_params.append(36)
+    int_params.append(978)
+    int_params.append(829)
+    int_params.append(1568)
+
     int_params.append(int(parameters.migration_year))
     int_params.append(int(parameters.influence_radius))
     int_params.append(int(parameters.excess_maize))
@@ -63,26 +88,26 @@ with open("../data/target_data.csv") as csv_file:
 observed_data = {"population": target_data}
 
 parameter_priors = pyabc.Distribution(
-    max_store_year = pyabc.RV("uniform", 1, 2),
-    max_storage = pyabc.RV("uniform", 1400, 200),
-    household_need = pyabc.RV("uniform", 700, 20),
-    min_fission = pyabc.RV("uniform", 16, 2),
-    max_fission = pyabc.RV("uniform", 25, 2),
-    min_death = pyabc.RV("uniform", 24, 5),
-    max_death = pyabc.RV("uniform", 35, 3),
-    max_distance = pyabc.RV("uniform", 900, 200),
-    initial_min = pyabc.RV("uniform", 800, 400),
-    initial_max = pyabc.RV("uniform", 1400, 200),
+    # max_store_year = pyabc.RV("uniform", 1, 2),
+    # max_storage = pyabc.RV("uniform", 1400, 200),
+    # household_need = pyabc.RV("uniform", 700, 20),
+    # min_fission = pyabc.RV("uniform", 16, 2),
+    # max_fission = pyabc.RV("uniform", 25, 2),
+    # min_death = pyabc.RV("uniform", 24, 10),
+    # max_death = pyabc.RV("uniform", 35, 3),
+    # max_distance = pyabc.RV("uniform", 900, 200),
+    # initial_min = pyabc.RV("uniform", 800, 400),
+    # initial_max = pyabc.RV("uniform", 1400, 200),
     
-    migration_year = pyabc.RV("uniform", 10, 50),
-    influence_radius = pyabc.RV("uniform", 5, 15),
-    excess_maize = pyabc.RV("uniform", 90, 110),
+    migration_year = pyabc.RV("uniform", 0, 100),
+    influence_radius = pyabc.RV("uniform", 0, 30),
+    excess_maize = pyabc.RV("uniform", 0, 200),
     
     bias_var = pyabc.RV("uniform", 0.3, 0.01),
     newbies_factor = pyabc.RV("uniform", 0.1, 0.4),
     bias_mu = pyabc.RV("uniform", 0.1, 0.01),
     immigration_var = pyabc.RV("uniform", 1, 20),
-    delta_neighbours = pyabc.RV("uniform", 0.5, 10),
+    delta_neighbours = pyabc.RV("uniform", 0, 4),
     expectations_weight = pyabc.RV("uniform", 0.005, 0.5),
     fission_weight = pyabc.RV("uniform", 1, 0.01),
     death_weight = pyabc.RV("uniform", 1, 0.01),
@@ -104,4 +129,4 @@ db_path = ("sqlite:///" +
            os.path.join(tempfile.gettempdir(), "test.db"))
 history = abc.new(db_path, observed_data)
 
-history = abc.run(minimum_epsilon=50, max_nr_populations=10)
+history = abc.run(minimum_epsilon=30, max_nr_populations=10, min_acceptance_rate=0.023)
