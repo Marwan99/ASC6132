@@ -7,3 +7,4 @@ bin/*
 *.o
 scripts/NumberOfHousehold.csv
 NumberOfHousehold.csv
+*.png
