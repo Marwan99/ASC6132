@@ -7,21 +7,36 @@ proc.per.y = 1
 grid.buffer = 0
 
 start.year = 800
-end.year = 1000
-max.store.year = 2
-max.storage = 1600
+end.year = 1350
+max.store.year = 1
+max.storage = 1406
 household.need = 800
 min.fission.age = 17
 max.fission.age = 27
 min.death.age = 25
 max.death.age = 36
-max.distance = 1000
-initial.min.corn = 1000
-initial.max.corn = 1600
+max.distance = 978
+initial.min.corn = 829
+initial.max.corn = 1568
+
+migration.year = 35 # 25 - 75
+Influence.Radius = 18   # 5-20
+excess.Maize.Threshold = 110 # 90-200
+
 annual.variance = 0.10000
 spatial.variance = 0.10000
 fertility.prop = 0.11489
 harvest.adj = 0.97621
 new.household.ini.maize = 0.33000
+
+bias.Variance = 0.30940970480519525 # constant
+newbies.factor = 0.5 # 0.5-0.1
+bias.Mu = 0.1002170149822033 # constant
+Immigration.variance = 10.497946812132462 # 10 - 30
+delta.neighbours.weight = 9.934326444558183 # 0.5-10
+expectations.weight = 0.3024578732934098 # 0.005-0.05
+fission.weight = 1.009429583852256 #1- 10
+death.weight = 1.0019537435225996 #1 - 10
+migration.happiness.variance = 0.3025676945778354 # constant 
 
 result.file = NumberOfHousehold.csv

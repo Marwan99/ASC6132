@@ -1,0 +1,10 @@
+calibration-env/*
+calib-env/*
+.vscode/*
+bin/*
+*.pyc
+*.so
+*.o
+scripts/NumberOfHousehold.csv
+NumberOfHousehold.csv
+*.png

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+module load GCC/8.3.0
+
+# exporting mpi path
+export PATH=$HOME/sfw/MPICH/bin:$PATH
+
+# exporting swig path
+export PATH=$HOME/sfw/bin:$PATH
+
+# Adding boost and repast to ld lib path to build repast application
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/sfw/Boost/Boost_1.61/lib/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/sfw/repast_hpc-2.3.0/lib/
+
+conda activate calib-env
